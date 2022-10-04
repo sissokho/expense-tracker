@@ -40,6 +40,19 @@
         }
     },
     "scripts": {
+        "ide-helper": [
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:models"
+        ],
+        "lint": "./vendor/bin/pint -v",
+        "test:lint": "./vendor/bin/pint --test -v",
+        "test:types": "./vendor/bin/phpstan analyse --ansi",
+        "test:unit": "@php artisan test",
+        "test": [
+            "@test:lint",
+            "@test:types",
+            "@test:unit"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
