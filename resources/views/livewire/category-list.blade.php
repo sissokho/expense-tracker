@@ -1,5 +1,15 @@
 <div class="space-y-2">
     <div class="overflow-x-auto relative p-2 space-y-4 sm:rounded-lg">
+        <div class="flex">
+            <div class="ml-auto flex items-center space-x-2">
+                <x-jet-label id="per-page">Per Page</x-jet-label>
+                <select wire:model="perPage" id="per-page" class="rounded-md py-1">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+        </div>
         @if ($categories->isEmpty())
         <div class="text-center text-gray-500">
             No Categories Found
@@ -47,4 +57,8 @@
         </table>
         @endif
     </div>
+
+    @if ($categories->isNotEmpty())
+    <div class="p-2">{{ $categories->links() }}</div>
+    @endif
 </div>

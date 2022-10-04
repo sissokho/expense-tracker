@@ -8,10 +8,15 @@ use Livewire\WithPagination;
 
 class CategoryList extends Component
 {
+    use WithPagination;
+
+    public $perPage = 10;
+
     public function render()
     {
         return view('livewire.category-list', [
-            'categories' => Category::all()
+            'categories' => Category::query()
+                ->paginate($this->perPage)
         ]);
     }
 }
