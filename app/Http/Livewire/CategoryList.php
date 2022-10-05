@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire;
 
-use App\Models\Category;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -22,10 +21,17 @@ class CategoryList extends Component
         $this->resetPage();
     }
 
+    public function getUserProperty()
+    {
+        return auth()->user();
+    }
+
     public function render()
     {
+
         return view('livewire.category-list', [
-            'categories' => Category::query()
+            'categories' => $this->user
+                ->categories()
                 ->search($this->search)
                 ->paginate($this->perPage)
         ]);
