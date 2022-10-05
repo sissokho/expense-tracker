@@ -1,6 +1,6 @@
 <div class="space-y-2">
     <div class="overflow-x-auto relative p-2 space-y-4 sm:rounded-lg">
-        <div class="flex">
+        <div class="flex flex-col gap-4 sm:flex-row smL:gap-0">
             <div class="bg-white dark:bg-gray-900">
                 <label for="table-search" class="sr-only">Search</label>
                 <div class="relative mt-1">
@@ -17,7 +17,7 @@
                         placeholder="Search for categories" wire:model.debounce.500ms="search">
                 </div>
             </div>
-            <div class="ml-auto flex items-center space-x-2">
+            <div class="flex items-center space-x-2 sm:ml-auto">
                 <x-jet-label id="per-page">Per Page</x-jet-label>
                 <select wire:model="perPage" id="per-page" class="rounded-md py-1">
                     <option value="10">10</option>
@@ -44,7 +44,7 @@
                     <th scope="col" class="py-3 px-6">
                         Category
                     </th>
-                    <th scope="col" class="py-3 px-6">
+                    <th scope="col" class="py-3 px-6 text-right">
                         Action
                     </th>
                 </tr>
@@ -63,7 +63,7 @@
                     <th scope="row" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         {{ $category->name }}
                     </th>
-                    <td class="py-4 px-6 space-x-2">
+                    <td class="text-right py-4 px-6 space-x-2">
                         <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
                         <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline">Delete</a>
                     </td>
