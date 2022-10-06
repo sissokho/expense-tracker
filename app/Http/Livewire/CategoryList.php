@@ -9,8 +9,9 @@ class CategoryList extends Component
 {
     use WithPagination;
 
-    public $search = '';
-    public $perPage = 10;
+    public string $search = '';
+    public int $perPage = 10;
+    public bool $openCategoryForm = false;
 
     protected $queryString = [
         'search' => ['except' => '']
@@ -28,7 +29,6 @@ class CategoryList extends Component
 
     public function render()
     {
-
         return view('livewire.category-list', [
             'categories' => $this->user
                 ->categories()
