@@ -26,7 +26,7 @@
                         <option value="50">50</option>
                     </select>
                 </div>
-                <x-jet-button class="bg-indigo-700 hover:bg-indigo-800" wire:click="$set('openCategoryForm', true)">New
+                <x-jet-button class="bg-indigo-700 hover:bg-indigo-800" wire:click="openCategoryForm">New
                 </x-jet-button>
             </div>
 
@@ -69,7 +69,8 @@
                         {{ $category->name }}
                     </th>
                     <td class="text-right py-4 px-6 space-x-2">
-                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                            wire:click.prevent="openCategoryForm({{ $category }})">Edit</a>
                         <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline">Delete</a>
                     </td>
                 </tr>
@@ -84,26 +85,26 @@
     @endif
 
     {{-- New Category/Edit Category form modal --}}
-    <x-jet-dialog-modal wire:model="openCategoryForm">
+    <x-jet-dialog-modal wire:model="openingCategoryForm">
         <x-slot name="title">
 
         </x-slot>
 
         <x-slot name="content">
-            <div class="mt-4">
+            <div class="mt-4" x-data x-on:opening-category-form.window="setTimeout(() => $refs.category.focus(), 250)">
                 <x-jet-input type="text" class="mt-1 block w-full" placeholder="{{ __('Category name') }}"
-                    x-ref="category" />
+                    x-ref="category" wire:model.defer="category.name" wire:keydown.enter="saveCategory" />
 
-                <x-jet-input-error for="category" class="mt-2" />
+                <x-jet-input-error for="category.name" class="mt-2" />
             </div>
         </x-slot>
 
         <x-slot name="footer">
-            <x-jet-secondary-button wire:click="$toggle('openCategoryForm')" wire:loading.attr="disabled">
+            <x-jet-secondary-button wire:click="$toggle('openingCategoryForm')" wire:loading.attr="disabled">
                 {{ __('Cancel') }}
             </x-jet-secondary-button>
 
-            <x-jet-button class="ml-3" wire:loading.attr="disabled">
+            <x-jet-button class="ml-3" wire:click="saveCategory" wire:loading.attr="disabled">
                 {{ __('Save') }}
             </x-jet-button>
         </x-slot>
