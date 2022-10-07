@@ -17,14 +17,19 @@
                         placeholder="Search for categories" wire:model.debounce.500ms="search">
                 </div>
             </div>
-            <div class="flex items-center space-x-2 sm:ml-auto">
-                <x-jet-label id="per-page">Per Page</x-jet-label>
-                <select wire:model="perPage" id="per-page" class="rounded-md py-1">
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                </select>
+            <div class="flex gap-4 sm:ml-auto">
+                <div class="flex items-center space-x-2">
+                    <x-jet-label id="per-page">Per Page</x-jet-label>
+                    <select wire:model="perPage" id="per-page" class="rounded-md py-1">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <x-jet-button class="bg-indigo-700 hover:bg-indigo-800" wire:click="openCategoryForm">New
+                </x-jet-button>
             </div>
+
         </div>
         @if ($categories->isEmpty())
         <div class="text-center text-gray-500">
@@ -64,7 +69,8 @@
                         {{ $category->name }}
                     </th>
                     <td class="text-right py-4 px-6 space-x-2">
-                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                            wire:click.prevent="openCategoryForm({{ $category }})">Edit</a>
                         <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline">Delete</a>
                     </td>
                 </tr>
@@ -77,4 +83,30 @@
     @if ($categories->isNotEmpty())
     <div class="p-2">{{ $categories->links() }}</div>
     @endif
+
+    {{-- New Category/Edit Category form modal --}}
+    <x-jet-dialog-modal wire:model="openingCategoryForm">
+        <x-slot name="title">
+
+        </x-slot>
+
+        <x-slot name="content">
+            <div class="mt-4" x-data x-on:opening-category-form.window="setTimeout(() => $refs.category.focus(), 250)">
+                <x-jet-input type="text" class="mt-1 block w-full" placeholder="{{ __('Category name') }}"
+                    x-ref="category" wire:model.defer="category.name" wire:keydown.enter="saveCategory" />
+
+                <x-jet-input-error for="category.name" class="mt-2" />
+            </div>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-jet-secondary-button wire:click="$toggle('openingCategoryForm')" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-jet-secondary-button>
+
+            <x-jet-button class="ml-3" wire:click="saveCategory" wire:loading.attr="disabled">
+                {{ __('Save') }}
+            </x-jet-button>
+        </x-slot>
+    </x-jet-dialog-modal>
 </div>
