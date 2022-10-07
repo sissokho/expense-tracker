@@ -5,11 +5,13 @@ namespace Tests\Feature\Livewire;
 use App\Http\Livewire\CategoryList;
 use App\Models\Category;
 use App\Models\User;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Livewire\Livewire;
 use Tests\TestCase;
+use Illuminate\Support\Str;
 
 class CategoryListTest extends TestCase
 {
@@ -173,5 +175,221 @@ class CategoryListTest extends TestCase
             ->set('search', 'banana')
             ->assertSet('search', 'banana')
             ->assertSet('page', 1);
+    }
+
+    /**
+     * @test
+     */
+    public function component_contains_creation_and_edit_form_modal(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(CategoryList::class);
+
+        $component->assertContainsBladeComponent('jet-dialog-modal');
+    }
+
+    /**
+     * @test
+     */
+    public function form_components_are_correctly_wired(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(CategoryList::class);
+
+        $component->assertPropertyWired('category.name')
+            ->assertMethodWired('openCategoryForm')
+            ->assertMethodWired('saveCategory');
+    }
+
+    /**
+     * @test
+     */
+    public function form_modal_is_closed_when_component_is_first_rendered(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(CategoryList::class);
+
+        $component->assertSet('openingCategoryForm', false);
+    }
+
+    /**
+     * @test
+     */
+    public function form_can_be_opened(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('openCategoryForm');
+
+        $component->assertSet('openingCategoryForm', true)
+            ->assertDispatchedBrowserEvent('opening-category-form');
+    }
+
+    /**
+     * @test
+     */
+    public function category_property_is_empty_when_form_modal_is_opened_in_creation_mode(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('openCategoryForm');
+
+        $component->assertSet('category.id', null)
+            ->assertSet('category.name', null);
+    }
+
+    /**
+     * @test
+     */
+    public function category_property_is_set_when_form_modal_is_opened_in_edit_mode(): void
+    {
+        $user = User::factory()->create();
+
+        $category = Category::factory()
+            ->for($user)
+            ->create();
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('openCategoryForm', $category);
+
+        $component->assertSet('category.id', $category->id)
+            ->assertSet('category.name', $category->name);
+    }
+
+    /**
+     * @test
+     */
+    public function form_can_be_closed(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(CategoryList::class)
+            ->set('openingCategoryForm', true);
+
+        $component->assertSet('openingCategoryForm', true)
+            ->set('openingCategoryForm', false)
+            ->assertSet('openingCategoryForm', false);
+    }
+
+    /**
+     * @test
+     */
+    public function user_can_create_a_category(): void
+    {
+        Livewire::actingAs(User::factory()->create());
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('openCategoryForm')
+            ->set('category.name', 'Health')
+            ->call('saveCategory');
+
+        $component->assertSet('openingCategoryForm', false)
+            ->assertEmitted('category-saved')
+            ->assertDispatchedBrowserEvent('banner-message', [
+                'style' => 'success',
+                'message' => 'Saved'
+            ]);
+
+        $this->assertDatabaseCount('categories', 1);
+        $this->assertDatabaseHas('categories', [
+            'id' => 1,
+            'name' => 'Health'
+        ]);
+    }
+
+    /**
+     * @test
+     */
+    public function user_can_edit_a_category(): void
+    {
+        $user = User::factory()->create();
+
+        $category = Category::factory()
+            ->for($user)
+            ->create([
+                'name' => 'Healt'
+            ]);
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('openCategoryForm', $category)
+            ->set('category.name', 'Health')
+            ->call('saveCategory');
+
+        $component->assertSet('openingCategoryForm', false)
+            ->assertEmitted('category-saved')
+            ->assertDispatchedBrowserEvent('banner-message', [
+                'style' => 'success',
+                'message' => 'Saved'
+            ]);
+
+        $this->assertDatabaseCount('categories', 1);
+        $this->assertDatabaseHas('categories', [
+            'id' => 1,
+            'name' => 'Health'
+        ]);
+    }
+
+    /**
+     * @test
+     */
+    public function user_cannot_edit_a_category_that_does_not_belong_to_him(): void
+    {
+        $category = Category::factory()
+            ->for(User::factory()->create())
+            ->create([
+                'name' => 'Healt'
+            ]);
+
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('openCategoryForm', $category)
+            ->set('category.name', 'Health')
+            ->call('saveCategory');
+
+        $component->assertForbidden();
+    }
+
+    /**
+     * @test
+     */
+    public function user_cannot_save_a_category_with_an_empty_name(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('openCategoryForm',)
+            ->set('category.name', '')
+            ->call('saveCategory');
+
+        $component->assertHasErrors([
+            'category.name' => ['required']
+        ]);
+    }
+
+    /**
+     * @test
+     */
+    public function user_cannot_save_a_category_with_a_name_that_is_longer_than_255_characters(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('openCategoryForm')
+            ->set('category.name', Str::of('h')->repeat(256))
+            ->call('saveCategory');
+
+        $component->assertHasErrors([
+            'category.name' => ['max']
+        ]);
     }
 }
