@@ -19,6 +19,7 @@ class CategoryList extends Component
     public string $search = '';
     public int $perPage = 10;
     public bool $openingCategoryForm = false;
+    public bool $confirmingCategoryDeletion = false;
     public ?Category $category = null;
 
     protected $queryString = [
@@ -30,7 +31,8 @@ class CategoryList extends Component
     ];
 
     protected $listeners = [
-        'category-saved' => '$refresh'
+        'category-saved' => '$refresh',
+        'category-deleted' => '$refresh',
     ];
 
     public function updatingSearch(): void
@@ -84,6 +86,38 @@ class CategoryList extends Component
         $this->dispatchBrowserEvent('banner-message', [
             'style' => 'success',
             'message' => 'Saved'
+        ]);
+    }
+
+    public function confirmCategoryDeletion(Category $category): void
+    {
+        $this->category = $category;
+
+        $this->confirmingCategoryDeletion = true;
+    }
+
+    public function deleteCategory(): void
+    {
+        $this->authorize('delete', $this->category);
+
+        if (!$this->category->delete()) {
+            $this->dispatchBrowserEvent('banner-message', [
+                'style' => 'danger',
+                'message' => 'Error'
+            ]);
+
+            $this->confirmingCategoryDeletion = false;
+
+            return;
+        }
+
+        $this->emitSelf('category-deleted');
+
+        $this->confirmingCategoryDeletion = false;
+
+        $this->dispatchBrowserEvent('banner-message', [
+            'style' => 'success',
+            'message' => 'Deleted'
         ]);
     }
 

@@ -44,14 +44,9 @@ class CategoryPolicy
         return $user->id === $category->user_id;
     }
 
-    /**
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function delete(User $user, Category $category)
+    public function delete(User $user, Category $category): Response|bool
     {
-        //
+        return $this->update($user, $category);
     }
 
     /**
