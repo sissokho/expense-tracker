@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Models\Category;
 use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -13,6 +14,7 @@ use Livewire\WithPagination;
 class CategoryList extends Component
 {
     use WithPagination;
+    use AuthorizesRequests;
 
     public string $search = '';
     public int $perPage = 10;
@@ -55,6 +57,10 @@ class CategoryList extends Component
     public function saveCategory(): void
     {
         $this->resetErrorBag();
+
+        if ($this->category->id !== null) {
+            $this->authorize('update', $this->category);
+        }
 
         $this->validate();
 
