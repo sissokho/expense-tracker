@@ -19,7 +19,10 @@ class CategoryList extends Component
     public string $search = '';
     public int $perPage = 10;
     public bool $openingCategoryForm = false;
+    public bool $confirmingCategoryDeletion = false;
+    public bool $massDeletion = false;
     public ?Category $category = null;
+    public array $selectedCategories = [];
 
     protected $queryString = [
         'search' => ['except' => '']
@@ -30,7 +33,9 @@ class CategoryList extends Component
     ];
 
     protected $listeners = [
-        'category-saved' => '$refresh'
+        'category-saved' => '$refresh',
+        'category-deleted' => '$refresh',
+        'categories-deleted' => '$refresh',
     ];
 
     public function updatingSearch(): void
@@ -84,6 +89,67 @@ class CategoryList extends Component
         $this->dispatchBrowserEvent('banner-message', [
             'style' => 'success',
             'message' => 'Saved'
+        ]);
+    }
+
+    public function confirmCategoryDeletion(Category $category): void
+    {
+        $this->category = $category;
+
+        $this->confirmingCategoryDeletion = true;
+    }
+
+    public function deleteCategory(): void
+    {
+        $this->authorize('delete', $this->category);
+
+        $categoryId = $this->category->id;
+
+        if (!$this->category->delete()) {
+            $this->dispatchBrowserEvent('banner-message', [
+                'style' => 'danger',
+                'message' => 'Error'
+            ]);
+
+            $this->confirmingCategoryDeletion = false;
+
+            return;
+        }
+
+        $this->emitSelf('category-deleted');
+
+        $this->confirmingCategoryDeletion = false;
+
+        $this->dispatchBrowserEvent('category-deleted', ['id' => $categoryId]);
+
+        $this->dispatchBrowserEvent('banner-message', [
+            'style' => 'success',
+            'message' => 'Deleted'
+        ]);
+    }
+
+    public function confirmMassCategoryDeletion(): void
+    {
+        $this->massDeletion = true;
+
+        $this->confirmingCategoryDeletion = true;
+    }
+
+    public function deleteCategories(): void
+    {
+        Category::destroy($this->selectedCategories);
+
+        $this->emitSelf('categories-deleted');
+
+        $this->confirmingCategoryDeletion = false;
+
+        $this->massDeletion = false;
+
+        $this->selectedCategories = [];
+
+        $this->dispatchBrowserEvent('banner-message', [
+            'style' => 'success',
+            'message' => 'Deleted'
         ]);
     }
 
