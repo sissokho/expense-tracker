@@ -1,6 +1,7 @@
 <div class="space-y-2">
-    <div class="overflow-x-auto relative p-2 space-y-4 sm:rounded-lg">
-        <div class="flex flex-col gap-4 sm:flex-row smL:gap-0">
+    <div class="overflow-x-auto relative p-2 space-y-4 sm:rounded-lg" x-data="multipleSelection"
+        x-on:category-deleted.window="unselect(event.detail.id)">
+        <div class="flex flex-col gap-4 md:flex-row md:gap-0">
             <div class="bg-white dark:bg-gray-900">
                 <label for="table-search" class="sr-only">Search</label>
                 <div class="relative mt-1">
@@ -17,7 +18,7 @@
                         placeholder="Search for categories" wire:model.debounce.500ms="search">
                 </div>
             </div>
-            <div class="flex gap-4 sm:ml-auto">
+            <div class="flex gap-4 ml-auto">
                 <div class="flex items-center space-x-2">
                     <x-jet-label id="per-page">Per Page</x-jet-label>
                     <select wire:model="perPage" id="per-page" class="rounded-md py-1">
@@ -26,10 +27,13 @@
                         <option value="50">50</option>
                     </select>
                 </div>
+                <x-jet-button class="bg-red-700 hover:bg-red-800" style="display: none;" x-show="totalSelected"
+                    wire:click.prevent="confirmMassCategoryDeletion">Delete
+                    (<span x-text="(totalSelected)"></span>)
+                </x-jet-button>
                 <x-jet-button class="bg-indigo-700 hover:bg-indigo-800" wire:click="openCategoryForm">New
                 </x-jet-button>
             </div>
-
         </div>
         @if ($categories->isEmpty())
         <div class="text-center text-gray-500">
@@ -41,9 +45,10 @@
                 <tr>
                     <th scope="col" class="p-4">
                         <div class="flex items-center">
-                            <input id="checkbox-all-search" type="checkbox"
-                                class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                            <label for="checkbox-all-search" class="sr-only">checkbox</label>
+                            <input id="checkbox-toggle-all" type="checkbox"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                x-on:click="toggleAll(event, @js($categories->pluck('id')))">
+                            <label for="checkbox-toggle-all" class="sr-only">checkbox</label>
                         </div>
                     </th>
                     <th scope="col" class="py-3 px-6">
@@ -61,7 +66,8 @@
                     <td class="p-4 w-4">
                         <div class="flex items-center" wire:key="category-checkbox-{{ $category->id }}">
                             <input id="category-{{ $category->id }}-checkbox" type="checkbox"
-                                class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                x-on:change="toggle(event, @js($category->id))" data-id="{{ $category->id }}"
+                                class="checkbox w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                             <label for="category-{{ $category->id }}-checkbox" class="sr-only">checkbox</label>
                         </div>
                     </td>
@@ -114,13 +120,24 @@
     {{-- Delete Category confirmation Modal --}}
     <x-jet-dialog-modal wire:model="confirmingCategoryDeletion">
         <x-slot name="title">
+            @if ($massDeletion)
+            {{ __('Delete Categories') }}
+            @else
             {{ __('Delete Category') }}
+            @endif
         </x-slot>
 
         <x-slot name="content">
+            @if ($massDeletion)
+            {{ __('Are you sure you want to delete these categories? Once these categories are deleted, all of their
+            related
+            transactions
+            will be permanently deleted.') }}
+            @else
             {{ __('Are you sure you want to delete this category? Once this category is deleted, all of its related
             transactions
             will be permanently deleted.') }}
+            @endif
         </x-slot>
 
         <x-slot name="footer">
@@ -128,9 +145,65 @@
                 {{ __('Cancel') }}
             </x-jet-secondary-button>
 
+            @if ($massDeletion)
+            <x-jet-danger-button class="ml-3" wire:click="deleteCategories" wire:loading.attr="disabled">
+                {{ __('Delete Categories') }}
+            </x-jet-danger-button>
+            @else
             <x-jet-danger-button class="ml-3" wire:click="deleteCategory" wire:loading.attr="disabled">
                 {{ __('Delete Category') }}
             </x-jet-danger-button>
+            @endif
         </x-slot>
     </x-jet-dialog-modal>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('multipleSelection', () => ({
+            selected: @entangle('selectedCategories'),
+            totalSelected: 0,
+            toggleAllCheckbox: document.getElementById('checkbox-toggle-all'),
+
+            init() {
+                this.$watch('selected', () => {
+                    this.totalSelected = this.selected.length;
+                });
+            },
+
+            unselect(id) {
+                this.selected = this.selected.filter(itemId => id !== itemId);
+
+                this.toggleAllCheckbox.checked = false;
+            },
+
+            toggle(event, id) {
+                if (event.target.checked) {
+                    this.selected.push(id);
+                } else {
+                    this.unselect(id);
+                }
+            },
+
+            toggleAll(event, ids) {
+                if (event.target.checked) {
+                    this.selected = ids;
+                } else {
+                    this.selected = [];
+                }
+
+                this.toggleCheckboxes();
+            },
+
+            toggleCheckboxes() {
+                [...document.querySelectorAll('.checkbox')].forEach(checkbox => {
+                    const id = parseInt(checkbox.dataset.id);
+
+                    checkbox.checked = this.selected.includes(id);
+                });
+            },
+        }));
+    });
+</script>
+@endpush

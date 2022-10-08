@@ -20,7 +20,9 @@ class CategoryList extends Component
     public int $perPage = 10;
     public bool $openingCategoryForm = false;
     public bool $confirmingCategoryDeletion = false;
+    public bool $massDeletion = false;
     public ?Category $category = null;
+    public array $selectedCategories = [];
 
     protected $queryString = [
         'search' => ['except' => '']
@@ -33,6 +35,7 @@ class CategoryList extends Component
     protected $listeners = [
         'category-saved' => '$refresh',
         'category-deleted' => '$refresh',
+        'categories-deleted' => '$refresh',
     ];
 
     public function updatingSearch(): void
@@ -100,6 +103,8 @@ class CategoryList extends Component
     {
         $this->authorize('delete', $this->category);
 
+        $categoryId = $this->category->id;
+
         if (!$this->category->delete()) {
             $this->dispatchBrowserEvent('banner-message', [
                 'style' => 'danger',
@@ -114,6 +119,33 @@ class CategoryList extends Component
         $this->emitSelf('category-deleted');
 
         $this->confirmingCategoryDeletion = false;
+
+        $this->dispatchBrowserEvent('category-deleted', ['id' => $categoryId]);
+
+        $this->dispatchBrowserEvent('banner-message', [
+            'style' => 'success',
+            'message' => 'Deleted'
+        ]);
+    }
+
+    public function confirmMassCategoryDeletion(): void
+    {
+        $this->massDeletion = true;
+
+        $this->confirmingCategoryDeletion = true;
+    }
+
+    public function deleteCategories(): void
+    {
+        Category::destroy($this->selectedCategories);
+
+        $this->emitSelf('categories-deleted');
+
+        $this->confirmingCategoryDeletion = false;
+
+        $this->massDeletion = false;
+
+        $this->selectedCategories = [];
 
         $this->dispatchBrowserEvent('banner-message', [
             'style' => 'success',
