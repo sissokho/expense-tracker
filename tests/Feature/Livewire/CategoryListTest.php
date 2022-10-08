@@ -392,4 +392,128 @@ class CategoryListTest extends TestCase
             'category.name' => ['max']
         ]);
     }
+
+    /**
+     * @test
+     */
+    public function user_must_confirm_when_deleting_a_category(): void
+    {
+        $user = User::factory()->create();
+
+        $category = Category::factory()
+            ->for($user)
+            ->create();
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('confirmCategoryDeletion', $category);
+
+        $component->assertMethodWired('confirmCategoryDeletion')
+            ->assertSet('confirmingCategoryDeletion', true);
+    }
+
+    /**
+     * @test
+     */
+    public function user_can_delete_one_of_his_category(): void
+    {
+        $user = User::factory()->create();
+
+        $category = Category::factory()
+            ->for($user)
+            ->create();
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('confirmCategoryDeletion', $category)
+            ->call('deleteCategory');
+
+        $component->assertSet('category.id', $category->id)
+            ->assertSet('confirmingCategoryDeletion', false)
+            ->assertEmitted('category-deleted')
+            ->assertDispatchedBrowserEvent('category-deleted', ['id' => $category->id])
+            ->assertDispatchedBrowserEvent('banner-message', [
+                'style' => 'success',
+                'message' => 'Deleted'
+            ]);
+
+        $this->assertModelMissing($category);
+        $this->assertDatabaseCount('categories', 0);
+    }
+
+    /**
+     * @test
+     */
+    public function user_cannot_delete_a_category_that_does_not_belong_to_him(): void
+    {
+        $category = Category::factory()
+            ->for(User::factory())
+            ->create();
+
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('confirmCategoryDeletion', $category)
+            ->call('deleteCategory');
+
+        $component->assertForbidden();
+    }
+
+    /**
+     * @test
+     */
+    public function user_must_confirm_when_deleting_multiple_categories(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('confirmMassCategoryDeletion');
+
+        $component->assertSet('massDeletion', true)
+            ->assertSet('confirmingCategoryDeletion', true);
+    }
+
+    /**
+     * @test
+     */
+    public function user_can_delete_multiple_categories(): void
+    {
+        $user = User::factory()->create();
+
+        Category::factory()
+            ->count(10)
+            ->for($user)
+            ->create();
+
+        $selectedCategories = [1, 2, 4];
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(CategoryList::class)
+            ->set('selectedCategories', $selectedCategories)
+            ->call('confirmMassCategoryDeletion')
+            ->call('deleteCategories');
+
+        $component->assertSet('confirmingCategoryDeletion', false)
+            ->assertSet('massDeletion', false)
+            ->assertSet('selectedCategories', [])
+            ->assertEmitted('categories-deleted')
+            ->assertDispatchedBrowserEvent('banner-message', [
+                'style' => 'success',
+                'message' => 'Deleted'
+            ]);
+
+        $this->assertDatabaseCount('categories', 7);
+        $this->assertDatabaseMissing('categories', [
+            'id' => 1
+        ]);
+        $this->assertDatabaseMissing('categories', [
+            'id' => 2
+        ]);
+        $this->assertDatabaseMissing('categories', [
+            'id' => 4
+        ]);
+    }
 }
