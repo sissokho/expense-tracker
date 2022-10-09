@@ -44,7 +44,7 @@ jobs:
         run: chmod -R 777 storage bootstrap/cache
 
       - name: Create Test Database
-        run: |
+        cmd: |
           if [ ! -f "database/database.sqlite" ]; then
             mkdir -p database
             touch database/database.sqlite
