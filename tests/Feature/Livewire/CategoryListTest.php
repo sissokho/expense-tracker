@@ -1,17 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Livewire;
 
 use App\Http\Livewire\CategoryList;
 use App\Models\Category;
 use App\Models\User;
-use Exception;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
-use Illuminate\Support\Str;
 
 class CategoryListTest extends TestCase
 {
@@ -294,13 +294,13 @@ class CategoryListTest extends TestCase
             ->assertEmitted('category-saved')
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
-                'message' => 'Saved'
+                'message' => 'Saved',
             ]);
 
         $this->assertDatabaseCount('categories', 1);
         $this->assertDatabaseHas('categories', [
             'id' => 1,
-            'name' => 'Health'
+            'name' => 'Health',
         ]);
     }
 
@@ -314,7 +314,7 @@ class CategoryListTest extends TestCase
         $category = Category::factory()
             ->for($user)
             ->create([
-                'name' => 'Healt'
+                'name' => 'Healt',
             ]);
 
         Livewire::actingAs($user);
@@ -328,13 +328,13 @@ class CategoryListTest extends TestCase
             ->assertEmitted('category-saved')
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
-                'message' => 'Saved'
+                'message' => 'Saved',
             ]);
 
         $this->assertDatabaseCount('categories', 1);
         $this->assertDatabaseHas('categories', [
             'id' => 1,
-            'name' => 'Health'
+            'name' => 'Health',
         ]);
     }
 
@@ -346,7 +346,7 @@ class CategoryListTest extends TestCase
         $category = Category::factory()
             ->for(User::factory()->create())
             ->create([
-                'name' => 'Healt'
+                'name' => 'Healt',
             ]);
 
         Livewire::actingAs(User::factory()->make());
@@ -367,12 +367,12 @@ class CategoryListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(CategoryList::class)
-            ->call('openCategoryForm',)
+            ->call('openCategoryForm')
             ->set('category.name', '')
             ->call('saveCategory');
 
         $component->assertHasErrors([
-            'category.name' => ['required']
+            'category.name' => ['required'],
         ]);
     }
 
@@ -389,7 +389,7 @@ class CategoryListTest extends TestCase
             ->call('saveCategory');
 
         $component->assertHasErrors([
-            'category.name' => ['max']
+            'category.name' => ['max'],
         ]);
     }
 
@@ -436,7 +436,7 @@ class CategoryListTest extends TestCase
             ->assertDispatchedBrowserEvent('category-deleted', ['id' => $category->id])
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
-                'message' => 'Deleted'
+                'message' => 'Deleted',
             ]);
 
         $this->assertModelMissing($category);
@@ -502,18 +502,18 @@ class CategoryListTest extends TestCase
             ->assertEmitted('categories-deleted')
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
-                'message' => 'Deleted'
+                'message' => 'Deleted',
             ]);
 
         $this->assertDatabaseCount('categories', 7);
         $this->assertDatabaseMissing('categories', [
-            'id' => 1
+            'id' => 1,
         ]);
         $this->assertDatabaseMissing('categories', [
-            'id' => 2
+            'id' => 2,
         ]);
         $this->assertDatabaseMissing('categories', [
-            'id' => 4
+            'id' => 4,
         ]);
     }
 }

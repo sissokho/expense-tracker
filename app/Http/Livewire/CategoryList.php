@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Livewire;
 
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\View\View;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,21 +20,39 @@ class CategoryList extends Component
     use AuthorizesRequests;
 
     public string $search = '';
+
     public int $perPage = 10;
+
     public bool $openingCategoryForm = false;
+
     public bool $confirmingCategoryDeletion = false;
+
     public bool $massDeletion = false;
-    public ?Category $category = null;
+
+    public Category $category;
+
+    /**
+     * @var array<int, int>
+     */
     public array $selectedCategories = [];
 
+    /**
+     * @var array<string, array<string, string>>
+     */
     protected $queryString = [
-        'search' => ['except' => '']
+        'search' => ['except' => ''],
     ];
 
+    /**
+     * @var array<string, array<int, string>>
+     */
     protected $rules = [
-        'category.name' => ['required', 'string', 'max:255']
+        'category.name' => ['required', 'string', 'max:255'],
     ];
 
+    /**
+     * @var array<string, string>
+     */
     protected $listeners = [
         'category-saved' => '$refresh',
         'category-deleted' => '$refresh',
@@ -45,7 +66,12 @@ class CategoryList extends Component
 
     public function getUserProperty(): User
     {
-        return auth()->user();
+        /**
+         * @var User $user
+         */
+        $user = auth()->user();
+
+        return $user;
     }
 
     public function openCategoryForm(Category $category = null): void
@@ -71,10 +97,10 @@ class CategoryList extends Component
 
         $this->category->user_id = $this->user->id;
 
-        if (!$this->category->save()) {
+        if (! $this->category->save()) {
             $this->dispatchBrowserEvent('banner-message', [
                 'style' => 'danger',
-                'message' => 'Error'
+                'message' => 'Error',
             ]);
 
             $this->openingCategoryForm = false;
@@ -88,7 +114,7 @@ class CategoryList extends Component
 
         $this->dispatchBrowserEvent('banner-message', [
             'style' => 'success',
-            'message' => 'Saved'
+            'message' => 'Saved',
         ]);
     }
 
@@ -105,10 +131,10 @@ class CategoryList extends Component
 
         $categoryId = $this->category->id;
 
-        if (!$this->category->delete()) {
+        if (! $this->category->delete()) {
             $this->dispatchBrowserEvent('banner-message', [
                 'style' => 'danger',
-                'message' => 'Error'
+                'message' => 'Error',
             ]);
 
             $this->confirmingCategoryDeletion = false;
@@ -124,7 +150,7 @@ class CategoryList extends Component
 
         $this->dispatchBrowserEvent('banner-message', [
             'style' => 'success',
-            'message' => 'Deleted'
+            'message' => 'Deleted',
         ]);
     }
 
@@ -149,17 +175,16 @@ class CategoryList extends Component
 
         $this->dispatchBrowserEvent('banner-message', [
             'style' => 'success',
-            'message' => 'Deleted'
+            'message' => 'Deleted',
         ]);
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.category-list', [
-            'categories' => $this->user
-                ->categories()
+            'categories' => $this->user->categories()
                 ->search($this->search)
-                ->paginate($this->perPage)
+                ->paginate($this->perPage),
         ]);
     }
 }

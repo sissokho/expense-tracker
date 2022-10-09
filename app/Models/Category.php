@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
@@ -13,11 +15,19 @@ class Category extends Model
 
     protected $guarded = [];
 
+    /**
+     * @return BelongsTo<User, Category>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @param  Builder<Category>  $query
+     * @param  string  $searchTerm
+     * @return Builder<Category>
+     */
     public function scopeSearch(Builder $query, string $searchTerm): Builder
     {
         if ($searchTerm == '') {

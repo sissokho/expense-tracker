@@ -1,14 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature;
 
-use App\Http\Livewire\CategoryList;
-use App\Models\Category;
 use App\Models\User;
-use Database\Factories\UserFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Livewire;
 use Tests\TestCase;
 
 class CategoryTest extends TestCase
@@ -24,6 +21,7 @@ class CategoryTest extends TestCase
 
         $response->assertRedirect(route('login'));
     }
+
     /**
      * @test
      */
