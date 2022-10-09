@@ -97,7 +97,7 @@ class CategoryList extends Component
 
         $this->category->user_id = $this->user->id;
 
-        if (!$this->category->save()) {
+        if (! $this->category->save()) {
             $this->dispatchBrowserEvent('banner-message', [
                 'style' => 'danger',
                 'message' => 'Error',
@@ -131,7 +131,7 @@ class CategoryList extends Component
 
         $categoryId = $this->category->id;
 
-        if (!$this->category->delete()) {
+        if (! $this->category->delete()) {
             $this->dispatchBrowserEvent('banner-message', [
                 'style' => 'danger',
                 'message' => 'Error',
