@@ -45,8 +45,10 @@ jobs:
 
       - name: Create Test Database
         run: |
-          mkdir -p database
-          touch database/database.sqlite
+          if [ ! -f "database/database.sqlite" ]; then
+            mkdir -p database
+            touch database/database.sqlite
+          fi
 
       - name: Install NPM dependencies
         run: npm ci
