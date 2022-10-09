@@ -19,7 +19,7 @@ class CategoryPolicy
      */
     public function viewAny(User $user)
     {
-        //
+        // @phpstan-ignore-line
     }
 
     /**
@@ -29,7 +29,7 @@ class CategoryPolicy
      */
     public function view(User $user, Category $category)
     {
-        //
+        // @phpstan-ignore-line
     }
 
     /**
@@ -38,7 +38,7 @@ class CategoryPolicy
      */
     public function create(User $user)
     {
-        //
+        // @phpstan-ignore-line
     }
 
     public function update(User $user, Category $category): Response|bool
@@ -58,7 +58,7 @@ class CategoryPolicy
      */
     public function restore(User $user, Category $category)
     {
-        //
+        // @phpstan-ignore-line
     }
 
     /**
@@ -70,6 +70,6 @@ class CategoryPolicy
      */
     public function forceDelete(User $user, Category $category)
     {
-        //
+        // @phpstan-ignore-line
     }
 }

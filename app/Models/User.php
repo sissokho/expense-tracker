@@ -58,6 +58,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'profile_photo_url',
     ];
 
+    /**
+     * @return HasMany<Category>
+     */
     public function categories(): HasMany
     {
         return $this->hasMany(Category::class);
