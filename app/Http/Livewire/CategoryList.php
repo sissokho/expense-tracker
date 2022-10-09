@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Livewire;
 
 use App\Models\Category;
@@ -17,19 +19,25 @@ class CategoryList extends Component
     use AuthorizesRequests;
 
     public string $search = '';
+
     public int $perPage = 10;
+
     public bool $openingCategoryForm = false;
+
     public bool $confirmingCategoryDeletion = false;
+
     public bool $massDeletion = false;
+
     public ?Category $category = null;
+
     public array $selectedCategories = [];
 
     protected $queryString = [
-        'search' => ['except' => '']
+        'search' => ['except' => ''],
     ];
 
     protected $rules = [
-        'category.name' => ['required', 'string', 'max:255']
+        'category.name' => ['required', 'string', 'max:255'],
     ];
 
     protected $listeners = [
@@ -71,10 +79,10 @@ class CategoryList extends Component
 
         $this->category->user_id = $this->user->id;
 
-        if (!$this->category->save()) {
+        if (! $this->category->save()) {
             $this->dispatchBrowserEvent('banner-message', [
                 'style' => 'danger',
-                'message' => 'Error'
+                'message' => 'Error',
             ]);
 
             $this->openingCategoryForm = false;
@@ -88,7 +96,7 @@ class CategoryList extends Component
 
         $this->dispatchBrowserEvent('banner-message', [
             'style' => 'success',
-            'message' => 'Saved'
+            'message' => 'Saved',
         ]);
     }
 
@@ -105,10 +113,10 @@ class CategoryList extends Component
 
         $categoryId = $this->category->id;
 
-        if (!$this->category->delete()) {
+        if (! $this->category->delete()) {
             $this->dispatchBrowserEvent('banner-message', [
                 'style' => 'danger',
-                'message' => 'Error'
+                'message' => 'Error',
             ]);
 
             $this->confirmingCategoryDeletion = false;
@@ -124,7 +132,7 @@ class CategoryList extends Component
 
         $this->dispatchBrowserEvent('banner-message', [
             'style' => 'success',
-            'message' => 'Deleted'
+            'message' => 'Deleted',
         ]);
     }
 
@@ -149,7 +157,7 @@ class CategoryList extends Component
 
         $this->dispatchBrowserEvent('banner-message', [
             'style' => 'success',
-            'message' => 'Deleted'
+            'message' => 'Deleted',
         ]);
     }
 
@@ -159,7 +167,7 @@ class CategoryList extends Component
             'categories' => $this->user
                 ->categories()
                 ->search($this->search)
-                ->paginate($this->perPage)
+                ->paginate($this->perPage),
         ]);
     }
 }
