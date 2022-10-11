@@ -37,6 +37,9 @@
                     <th scope="col" class="py-3 px-6">
                         Category
                     </th>
+                    <th scope="col" class="py-3 px-6">
+                        Entry Date
+                    </th>
                     <th scope="col" class="py-3 px-6 text-right">
                         Action
                     </th>
@@ -63,6 +66,9 @@
                     </th>
                     <th scope="row" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         {{ $transaction->category->name }}
+                    </th>
+                    <th scope="row" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        {{ $transaction->created_at->toFormattedDateString() }}
                     </th>
                     <td class="text-right py-4 px-6 space-x-2">
                         <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
