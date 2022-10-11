@@ -17,11 +17,25 @@ class TransactionList extends Component
 
     public TransactionType $type;
 
+    public string $search = '';
+
     public int $perPage = 10;
+
+    /**
+     * @var array<string, array<string, string>>
+     */
+    protected $queryString = [
+        'search' => ['except' => ''],
+    ];
 
     public function mount(TransactionType $type): void
     {
         $this->type = $type;
+    }
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
     }
 
     public function updatingPerPage(): void
@@ -43,8 +57,9 @@ class TransactionList extends Component
     {
         return view('livewire.transaction-list', [
             'transactions' => $this->user->transactions()
-                ->with('category')
                 ->where('type', $this->type)
+                ->search($this->search)
+                ->with('category')
                 ->latest()
                 ->paginate($this->perPage)
         ]);
