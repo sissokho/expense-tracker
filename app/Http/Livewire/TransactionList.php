@@ -6,17 +6,27 @@ use App\Enums\TransactionType;
 use App\Models\User;
 use Illuminate\View\View;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 /**
  * @property-read User $user
  */
 class TransactionList extends Component
 {
+    use WithPagination;
+
     public TransactionType $type;
+
+    public int $perPage = 10;
 
     public function mount(TransactionType $type): void
     {
         $this->type = $type;
+    }
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
     }
 
     public function getUserProperty(): User
@@ -36,7 +46,7 @@ class TransactionList extends Component
                 ->with('category')
                 ->where('type', $this->type)
                 ->latest()
-                ->get()
+                ->paginate($this->perPage)
         ]);
     }
 }
