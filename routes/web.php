@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\IncomeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,4 +32,6 @@ Route::middleware([
     })->name('dashboard');
 
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('/expenses', ExpenseController::class)->name('expenses');
+    Route::get('/incomes', IncomeController::class)->name('incomes');
 });
