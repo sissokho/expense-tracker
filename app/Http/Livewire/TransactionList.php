@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Livewire;
 
 use App\Enums\TransactionType;
@@ -61,7 +63,7 @@ class TransactionList extends Component
                 ->search($this->search)
                 ->with('category')
                 ->latest()
-                ->paginate($this->perPage)
+                ->paginate($this->perPage),
         ]);
     }
 }

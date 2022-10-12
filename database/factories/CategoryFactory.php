@@ -19,7 +19,7 @@ class CategoryFactory extends Factory
     {
         return [
             'name' => $this->faker->text(10),
-            'user_id' => User::factory()
+            'user_id' => User::factory(),
         ];
     }
 }
