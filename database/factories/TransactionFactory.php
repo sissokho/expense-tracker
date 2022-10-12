@@ -20,7 +20,7 @@ class TransactionFactory extends Factory
         return [
             'name' => $this->faker->text(10),
             'type' => $this->faker->randomElement(TransactionType::cases()),
-            'amount' => $this->faker->numberBetween(1, 100_000),
+            'amount' => $this->faker->numberBetween(100, 10_000),
             'category_id' => Category::factory(),
             'user_id' => User::factory(),
         ];

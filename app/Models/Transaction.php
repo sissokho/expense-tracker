@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Casts\Dollar;
 use App\Enums\TransactionType;
-use App\ValueObjects\Dollar;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,7 +21,7 @@ class Transaction extends Model
 
     protected $casts = [
         'type' => TransactionType::class,
-        'amount' => 'integer',
+        'amount' => Dollar::class,
     ];
 
     /**
@@ -40,16 +40,16 @@ class Transaction extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * @return Attribute<callable, callable>
-     */
-    public function amount(): Attribute
-    {
-        return Attribute::make(
-            get: fn (float $value) => new Dollar($value),
-            set: fn (Dollar $value) => $value->toCents()
-        );
-    }
+    // /**
+    //  * @return Attribute<callable, callable>
+    //  */
+    // public function amount(): Attribute
+    // {
+    //     return Attribute::make(
+    //         get: fn (float $value) => new Dollar($value),
+    //         set: fn (Dollar $value) => $value->toCents()
+    //     );
+    // }
 
     /**
      * @param  Builder<Transaction>  $query
