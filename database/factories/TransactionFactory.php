@@ -18,11 +18,30 @@ class TransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->text(10),
+            'name' => $this->faker->catchPhrase(),
             'type' => $this->faker->randomElement(TransactionType::cases()),
             'amount' => $this->faker->numberBetween(100, 10_000),
             'category_id' => Category::factory(),
             'user_id' => User::factory(),
+            'created_at' => $this->faker->dateTimeThisYear()
         ];
+    }
+
+    public function expense(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'type' => TransactionType::Expense
+            ];
+        });
+    }
+
+    public function income(): Factory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'type' => TransactionType::Income
+            ];
+        });
     }
 }
