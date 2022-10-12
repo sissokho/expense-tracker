@@ -11,10 +11,10 @@ class Dollar implements CastsAttributes
     /**
      * @param  \Illuminate\Database\Eloquent\Model  $model
      * @param  string  $key
-     * @param  mixed  $value
-     * @param  array  $attributes
+     * @param  int  $value
+     * @param  array<string, mixed>   $attributes
      */
-    public function get($model, $key, $value, $attributes): float
+    public function get($model, string $key, $value, array $attributes): float
     {
         return $value / 100;
     }
@@ -22,10 +22,10 @@ class Dollar implements CastsAttributes
     /**
      * @param  \Illuminate\Database\Eloquent\Model  $model
      * @param  string  $key
-     * @param  array  $value
-     * @param  array  $attributes
+     * @param  float  $value
+     * @param  array<string, mixed>  $attributes
      */
-    public function set($model, $key, $value, $attributes): int
+    public function set($model, string $key, $value, array $attributes): int
     {
         return (int) $value * 100;
     }
