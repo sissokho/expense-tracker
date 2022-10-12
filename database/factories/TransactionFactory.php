@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Enums\TransactionType;
@@ -23,7 +25,7 @@ class TransactionFactory extends Factory
             'amount' => $this->faker->randomFloat(nbMaxDecimals: 2, min: 1, max: 100), // In dollar
             'category_id' => Category::factory(),
             'user_id' => User::factory(),
-            'created_at' => $this->faker->dateTimeThisYear()
+            'created_at' => $this->faker->dateTimeThisYear(),
         ];
     }
 
@@ -31,7 +33,7 @@ class TransactionFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'type' => TransactionType::Expense
+                'type' => TransactionType::Expense,
             ];
         });
     }
@@ -40,7 +42,7 @@ class TransactionFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'type' => TransactionType::Income
+                'type' => TransactionType::Income,
             ];
         });
     }

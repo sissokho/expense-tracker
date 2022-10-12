@@ -24,7 +24,7 @@ class TransactionListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Expense
+            'type' => TransactionType::Expense,
         ]);
 
         $component->assertStatus(200)
@@ -37,7 +37,7 @@ class TransactionListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Income
+            'type' => TransactionType::Income,
         ]);
 
         $component->assertStatus(200)
@@ -65,13 +65,13 @@ class TransactionListTest extends TestCase
             ->expense()
             ->for($user)
             ->create([
-                'name' => 'banana'
+                'name' => 'banana',
             ]);
 
         Livewire::actingAs($user);
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Income
+            'type' => TransactionType::Income,
         ]);
 
         $component->assertSee($transactions[8]->name)
@@ -102,13 +102,13 @@ class TransactionListTest extends TestCase
             ->income()
             ->for($user)
             ->create([
-                'name' => 'banana'
+                'name' => 'banana',
             ]);
 
         Livewire::actingAs($user);
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Expense
+            'type' => TransactionType::Expense,
         ]);
 
         $component->assertSee($transactions[0]->name)
@@ -144,7 +144,7 @@ class TransactionListTest extends TestCase
         Livewire::actingAs($user);
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Expense
+            'type' => TransactionType::Expense,
         ]);
 
         $component->assertSee($userTransactions[0]->name)
@@ -179,7 +179,7 @@ class TransactionListTest extends TestCase
         Livewire::actingAs($user);
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Income
+            'type' => TransactionType::Income,
         ]);
 
         $component->assertSee($userTransactions[0]->name)
@@ -204,7 +204,7 @@ class TransactionListTest extends TestCase
         $shoesPurchase = Transaction::factory()
             ->expense()
             ->state([
-                'created_at' => now()->subYears(2)
+                'created_at' => now()->subYears(2),
             ])
             ->for($user)
             ->create(['name' => 'Air Jordan']);
@@ -213,7 +213,7 @@ class TransactionListTest extends TestCase
 
         $component = Livewire::withQueryParams(['page' => 2])
             ->test(TransactionList::class, [
-                'type' => TransactionType::Expense
+                'type' => TransactionType::Expense,
             ]);
 
         $component->assertSet('page', 2)
@@ -230,7 +230,7 @@ class TransactionListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Income
+            'type' => TransactionType::Income,
         ])
             ->set('perPage', 20);
 
@@ -249,12 +249,12 @@ class TransactionListTest extends TestCase
             ->expense()
             ->state([
                 'name' => 'abricot',
-                'created_at' => now()->subMinute()
+                'created_at' => now()->subMinute(),
             ])
             ->for($user)
             ->for(Category::factory()
                 ->create([
-                    'name' => 'abc'
+                    'name' => 'abc',
                 ]))
             ->create();
 
@@ -262,31 +262,31 @@ class TransactionListTest extends TestCase
             ->expense()
             ->state([
                 'name' => 'boabc',
-                'created_at' => now()
+                'created_at' => now(),
             ])
             ->for($user)
             ->for(Category::factory()
                 ->create([
-                    'name' => 'food'
+                    'name' => 'food',
                 ]))
             ->create();
 
         $transactions[] = Transaction::factory()
             ->expense()
             ->state([
-                'name' => 'random'
+                'name' => 'random',
             ])
             ->for($user)
             ->for(Category::factory()
                 ->create([
-                    'name' => 'see'
+                    'name' => 'see',
                 ]))
             ->create();
 
         Livewire::actingAs($user);
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Expense
+            'type' => TransactionType::Expense,
         ])
             ->set('search', 'ab');
 
@@ -296,7 +296,7 @@ class TransactionListTest extends TestCase
                 $transactions[1]->name,
                 $transactions[1]->category->name,
                 $transactions[0]->name,
-                $transactions[0]->category->name
+                $transactions[0]->category->name,
             ])
             ->assertDontSee($transactions[2]->name)
             ->assertDontSee($transactions[2]->category->name);
@@ -311,7 +311,7 @@ class TransactionListTest extends TestCase
 
         $component = Livewire::withQueryParams(['page' => 2])
             ->test(TransactionList::class, [
-                'type' => TransactionType::Income
+                'type' => TransactionType::Income,
             ]);
 
         $component->assertSet('page', 2)

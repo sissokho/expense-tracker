@@ -6,7 +6,6 @@ namespace Tests\Integration\Models;
 
 use App\Models\Category;
 use App\Models\Transaction;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,41 +20,41 @@ class TransactionTest extends TestCase
     {
         Transaction::factory()
             ->state([
-                'name' => 'abricot'
+                'name' => 'abricot',
             ])
             ->for(Category::factory()
                 ->create([
-                    'name' => 'abc'
+                    'name' => 'abc',
                 ]))
             ->create();
 
         Transaction::factory()
             ->state([
-                'name' => 'boabc'
+                'name' => 'boabc',
             ])
             ->for(Category::factory()
                 ->create([
-                    'name' => 'food'
+                    'name' => 'food',
                 ]))
             ->create();
 
         Transaction::factory()
             ->state([
-                'name' => 'random'
+                'name' => 'random',
             ])
             ->for(Category::factory()
                 ->create([
-                    'name' => 'ab'
+                    'name' => 'ab',
                 ]))
             ->create();
 
         Transaction::factory()
             ->state([
-                'name' => 'another random'
+                'name' => 'another random',
             ])
             ->for(Category::factory()
                 ->create([
-                    'name' => 'random'
+                    'name' => 'random',
                 ]))
             ->create();
 
