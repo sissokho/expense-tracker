@@ -12,7 +12,7 @@ class Dollar implements CastsAttributes
      * @param  \Illuminate\Database\Eloquent\Model  $model
      * @param  string  $key
      * @param  int  $value
-     * @param  array<string, mixed>   $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function get($model, string $key, $value, array $attributes): float
     {
