@@ -13,6 +13,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use NumberFormatter;
 
+/**
+ * @property float $amount
+ */
 class Transaction extends Model
 {
     use HasFactory;
