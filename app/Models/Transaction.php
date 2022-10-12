@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use NumberFormatter;
 
 class Transaction extends Model
 {
@@ -40,16 +41,20 @@ class Transaction extends Model
         return $this->belongsTo(User::class);
     }
 
-    // /**
-    //  * @return Attribute<callable, callable>
-    //  */
-    // public function amount(): Attribute
-    // {
-    //     return Attribute::make(
-    //         get: fn (float $value) => new Dollar($value),
-    //         set: fn (Dollar $value) => $value->toCents()
-    //     );
-    // }
+    /**
+     * @return Attribute<callable, callable>
+     */
+    public function formattedAmount(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $formatter = new NumberFormatter('en_US', NumberFormatter::CURRENCY);
+                $formatter->setAttribute(NumberFormatter::FRACTION_DIGITS, 0);
+
+                return $formatter->formatCurrency($this->amount, 'USD');
+            },
+        );
+    }
 
     /**
      * @param  Builder<Transaction>  $query

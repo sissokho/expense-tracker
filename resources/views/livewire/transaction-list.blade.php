@@ -77,7 +77,7 @@
                     </th>
                     <th scope="row" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         <span class="{{ $transaction->type->colors() }} font-black rounded-full px-2 py-1">
-                            {{ $transaction->amount }}
+                            {{ $transaction->formatted_amount }}
                         </span>
                     </th>
                     <th scope="row" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white">
