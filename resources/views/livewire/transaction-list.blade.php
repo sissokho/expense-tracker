@@ -89,7 +89,8 @@
                         {{ $transaction->created_at->toFormattedDateString() }}
                     </th>
                     <td class="text-right py-4 px-6 space-x-2">
-                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                            wire:click.prevent="openTransactionForm({{ $transaction }})">Edit</a>
                         <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline">Delete</a>
                     </td>
                 </tr>

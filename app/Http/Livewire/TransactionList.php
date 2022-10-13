@@ -134,6 +134,10 @@ class TransactionList extends Component
     {
         $this->resetErrorBag();
 
+        if ($this->transaction->id !== null) {
+            $this->authorize('update', $this->transaction);
+        }
+
         $this->validate();
 
         $this->transaction->fill([
@@ -141,7 +145,7 @@ class TransactionList extends Component
             'type' => $this->type,
         ]);
 
-        if (!$this->transaction->save()) {
+        if (! $this->transaction->save()) {
             $this->dispatchBrowserEvent('banner-message', [
                 'style' => 'danger',
                 'message' => 'Error',
