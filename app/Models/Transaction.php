@@ -54,7 +54,7 @@ class Transaction extends Model
         return Attribute::make(
             get: function () {
                 $formatter = new NumberFormatter('en_US', NumberFormatter::CURRENCY);
-                $formatter->setAttribute(NumberFormatter::FRACTION_DIGITS, 0);
+                $formatter->setAttribute(NumberFormatter::FRACTION_DIGITS, 2);
 
                 return $formatter->formatCurrency($this->amount, 'USD');
             },
