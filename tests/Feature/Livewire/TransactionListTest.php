@@ -11,6 +11,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -318,5 +319,279 @@ class TransactionListTest extends TestCase
             ->set('search', 'banana')
             ->assertSet('search', 'banana')
             ->assertSet('page', 1);
+    }
+
+    /**
+     * @test
+     */
+    public function form_components_are_wired(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Income,
+        ]);
+
+        $component->assertPropertyWired('transaction.name')
+            ->assertPropertyWired('transaction.amount')
+            ->assertPropertyWired('transaction.category_id')
+            ->assertMethodWired('openTransactionForm')
+            ->assertMethodWired('saveTransaction');
+    }
+
+    /**
+     * @test
+     */
+    public function form_modal_is_closed_when_component_is_first_rendered(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Expense,
+        ]);
+
+        $component->assertSet('openingTransactionForm', false);
+    }
+
+    /**
+     * @test
+     */
+    public function form_modal_can_be_opened(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Income,
+        ])->call('openTransactionForm');
+
+        $component->assertSet('openingTransactionForm', true)
+            ->assertDispatchedBrowserEvent('opening-transaction-form');
+    }
+
+    /**
+     * @test
+     */
+    public function transaction_property_is_empty_when_form_modal_is_opened_in_creation_mode(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Expense,
+        ])->call('openTransactionForm');
+
+        $component->assertSet('transaction.id', null)
+            ->assertSet('transaction.name', null)
+            ->assertSet('transaction.amount', null)
+            ->assertSet('transaction.category_id', null);
+    }
+
+    /**
+     * @test
+     */
+    public function transaction_property_is_set_when_form_modal_is_opened_in_edit_mode(): void
+    {
+        $user = User::factory()->create();
+
+        $transaction = Transaction::factory()
+            ->for($user)
+            ->create();
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Income,
+        ])->call('openTransactionForm', $transaction);
+
+        $component->assertSet('transaction.id', $transaction->id)
+            ->assertSet('transaction.name', $transaction->name)
+            ->assertSet('transaction.amount', $transaction->amount)
+            ->assertSet('transaction.category_id', $transaction->category_id);
+    }
+
+    /**
+     * @test
+     */
+    public function form_modal_can_be_closed(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Expense,
+        ])->set('openingTransactionForm', true);
+
+        $component->assertSet('openingTransactionForm', true)
+            ->set('openingTransactionForm', false)
+            ->assertSet('openingTransactionForm', false);
+    }
+
+    /**
+     * @test
+     * @dataProvider transactionTypeProvider
+     */
+    public function user_can_create_a_transaction(TransactionType $type): void
+    {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user);
+
+        $category = Category::factory()
+            ->for($user)
+            ->create();
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => $type,
+        ])
+            ->call('openTransactionForm')
+            ->set('transaction.name', 'Banana')
+            ->set('transaction.amount', 1) // 1 USD
+            ->set('transaction.category_id', $category->id)
+            ->call('saveTransaction');
+
+        $component->assertSet('openingTransactionForm', false)
+            ->assertEmitted('transaction-saved')
+            ->assertDispatchedBrowserEvent('banner-message', [
+                'style' => 'success',
+                'message' => 'Saved',
+            ]);
+
+        $this->assertDatabaseCount('transactions', 1);
+        $this->assertDatabaseHas('transactions', [
+            'id' => 1,
+            'name' => 'Banana',
+            'amount' => 100, // 100 Cents => 1 USD
+            'category_id' => $category->id,
+            'type' => $type->value,
+        ]);
+    }
+
+    /**
+     * @test
+     * @dataProvider transactionTypeProvider
+     */
+    public function user_can_edit_a_transaction(TransactionType $type): void
+    {
+        $user = User::factory()->create();
+
+        $foodCategory = Category::factory()
+            ->for($user)
+            ->create([
+                'name' => 'Food',
+            ]);
+
+        $transaction = Transaction::factory()
+            ->for($user)
+            ->for($foodCategory)
+            ->create([
+                'name' => 'Bana',
+                'amount' => '2', // 2 USD
+            ]);
+
+        $fruitCategory = Category::factory()
+            ->for($user)
+            ->create([
+                'name' => 'Fruit',
+            ]);
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => $type,
+        ])->call('openTransactionForm', $transaction)
+            ->set('transaction.name', 'Banana')
+            ->set('transaction.amount', 1) // 1 USD
+            ->set('transaction.category_id', $fruitCategory->id)
+            ->call('saveTransaction');
+
+        $component->assertSet('openingTransactionForm', false)
+            ->assertEmitted('transaction-saved')
+            ->assertDispatchedBrowserEvent('banner-message', [
+                'style' => 'success',
+                'message' => 'Saved',
+            ]);
+
+        $this->assertDatabaseCount('transactions', 1);
+        $this->assertDatabaseHas('transactions', [
+            'id' => 1,
+            'name' => 'Banana',
+            'amount' => 100, // 100 Cents => 1 USD
+            'category_id' => $fruitCategory->id,
+            'type' => $type,
+        ]);
+    }
+
+    /**
+     * @test
+     */
+    public function user_cannot_edit_a_category_that_does_not_belong_to_him(): void
+    {
+        $transaction = Transaction::factory()
+            ->for(User::factory()->create())
+            ->create();
+
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Income,
+        ])->call('openTransactionForm', $transaction)
+            ->set('transaction.name', 'Health')
+            ->set('transaction.amount', 1)
+            ->call('saveTransaction');
+
+        $component->assertForbidden();
+    }
+
+    /**
+     * @test
+     * @dataProvider invalidInputsProvider
+     */
+    public function user_cannot_save_a_transaction_with_invalid_data(array $inputs, string $property, string $rule): void
+    {
+        $user = User::factory()->create();
+
+        Category::factory()
+            ->for($user)
+            ->create();
+
+        if ($rule === 'in') {
+            Category::factory()->create();
+        }
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Expense,
+        ])->call('openTransactionForm')
+            ->set('transaction.name', $inputs[0])
+            ->set('transaction.amount', $inputs[1])
+            ->set('transaction.category_id', $inputs[2])
+            ->call('saveTransaction');
+
+        $component->assertHasErrors([
+            "transaction.{$property}" => [$rule],
+        ]);
+    }
+
+    public function invalidInputsProvider(): array
+    {
+        // Format: [[name, amount, category_id], property to test against, validation error rule]
+        return [
+            'empty name' => [['', 10, 1], 'name', 'required'],
+            'name is longer than 255 characters' => [[Str::of('h')->repeat(256), 10, 1], 'name', 'max'],
+            'amount is not numeric' => [['banana', 'dd', 1], 'amount', 'min'],
+            'amount is lower than 0.01 USD or 1 Cent' => [['banana', 0, 1], 'amount', 'min'],
+            'category id is null' => [['banana', 10, ''], 'category_id', 'required'],
+            'category id is not numeric' => [['banana', 10, 'id'], 'category_id', 'numeric'],
+            'category id is not an integer' => [['banana', 10, 1.5], 'category_id', 'integer'],
+            'category does not belongs to the user' => [['banana', 10, 2], 'category_id', 'in'],
+            'category does not exists' => [['banana', 10, 10], 'category_id', 'in'],
+        ];
+    }
+
+    public function transactionTypeProvider(): array
+    {
+        return [
+            'type income' => [TransactionType::Income],
+            'type expense' => [TransactionType::Expense],
+        ];
     }
 }
