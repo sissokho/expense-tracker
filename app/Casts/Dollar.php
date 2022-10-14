@@ -27,6 +27,10 @@ class Dollar implements CastsAttributes
      */
     public function set($model, string $key, $value, array $attributes): int
     {
-        return (int) $value * 100;
+        if (! is_numeric($value)) {
+            return 0;
+        }
+
+        return  (int) ($value * 100);
     }
 }

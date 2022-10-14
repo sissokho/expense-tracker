@@ -26,6 +26,8 @@
                         <option value="50">50</option>
                     </select>
                 </div>
+                <x-jet-button class="bg-indigo-700 hover:bg-indigo-800" wire:click="openTransactionForm">New
+                </x-jet-button>
             </div>
         </div>
 
@@ -87,7 +89,8 @@
                         {{ $transaction->created_at->toFormattedDateString() }}
                     </th>
                     <td class="text-right py-4 px-6 space-x-2">
-                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                            wire:click.prevent="openTransactionForm({{ $transaction }})">Edit</a>
                         <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline">Delete</a>
                     </td>
                 </tr>
@@ -100,4 +103,50 @@
     @if ($transactions->isNotEmpty())
     <div class="p-2">{{ $transactions->links() }}</div>
     @endif
+
+    {{-- New Transaction/Edit Transaction form modal --}}
+    <x-jet-dialog-modal wire:model="openingTransactionForm">
+        <x-slot name="title">
+
+        </x-slot>
+
+        <x-slot name="content">
+            <div class="mt-4 space-y-4" x-data
+                x-on:opening-transaction-form.window="setTimeout(() => $refs.name.focus(), 250)">
+                <div>
+                    <x-jet-label for="name" value="{{ __('Name') }}" />
+                    <x-jet-input type="text" id="name" class="mt-1 block w-full" placeholder="{{ __('Health') }}"
+                        x-ref="name" wire:model.defer="transaction.name" />
+                    <x-jet-input-error for="transaction.name" class="mt-2" />
+                </div>
+                <div>
+                    <x-jet-label for="amount" value="{{ __('Amount (in USD)') }}" />
+                    <x-jet-input type="text" id="amount" inputmode="decimal" class="mt-1 block w-full"
+                        placeholder="{{ __('20.5') }}" wire:model.defer="transaction.amount" />
+                    <x-jet-input-error for="transaction.amount" class="mt-2" />
+                </div>
+                <div>
+                    <x-jet-label for="category" value="{{ __('Category') }}" />
+                    <select id="category" class="mt-1 block w-full text-black"
+                        wire:model.defer="transaction.category_id">
+                        <option value="0" selected>Select a category</option>
+                        @foreach ($this->selectCategories as ['id' => $id, 'name' => $name])
+                        <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <x-jet-input-error for="transaction.category_id" class="mt-2" />
+                </div>
+            </div>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-jet-secondary-button wire:click="$toggle('openingTransactionForm')" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-jet-secondary-button>
+
+            <x-jet-button class="ml-3" wire:click.prevent="saveTransaction" wire:loading.attr="disabled">
+                {{ __('Save') }}
+            </x-jet-button>
+        </x-slot>
+    </x-jet-dialog-modal>
 </div>
