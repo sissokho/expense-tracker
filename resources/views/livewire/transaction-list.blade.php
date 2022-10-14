@@ -91,7 +91,8 @@
                     <td class="text-right py-4 px-6 space-x-2">
                         <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                             wire:click.prevent="openTransactionForm({{ $transaction }})">Edit</a>
-                        <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline">Delete</a>
+                        <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline"
+                            wire:click.prevent="confirmTransactionDeletion({{ $transaction }})">Delete</a>
                     </td>
                 </tr>
                 @endforeach
@@ -147,6 +148,28 @@
             <x-jet-button class="ml-3" wire:click.prevent="saveTransaction" wire:loading.attr="disabled">
                 {{ __('Save') }}
             </x-jet-button>
+        </x-slot>
+    </x-jet-dialog-modal>
+
+    {{-- Delete Transaction confirmation Modal --}}
+    <x-jet-dialog-modal wire:model="confirmingTransactionDeletion">
+        <x-slot name="title">
+            {{ __('Delete Transaction') }}
+        </x-slot>
+
+        <x-slot name="content">
+
+            {{ __('Are you sure you want to delete this transaction?') }}
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-jet-secondary-button wire:click="$toggle('confirmingTransactionDeletion')" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-jet-secondary-button>
+
+            <x-jet-danger-button class="ml-3" wire:click="deleteTransaction" wire:loading.attr="disabled">
+                {{ __('Delete Transaction') }}
+            </x-jet-danger-button>
         </x-slot>
     </x-jet-dialog-modal>
 </div>

@@ -32,9 +32,9 @@ class TransactionList extends Component
 
     public bool $openingTransactionForm = false;
 
-    public Transaction $transaction;
+    public bool $confirmingTransactionDeletion = false;
 
-    public ?int $category = null;
+    public Transaction $transaction;
 
     /**
      * @var array<string, string>
@@ -145,7 +145,7 @@ class TransactionList extends Component
             'type' => $this->type,
         ]);
 
-        if (! $this->transaction->save()) {
+        if (!$this->transaction->save()) {
             $this->dispatchBrowserEvent('banner-message', [
                 'style' => 'danger',
                 'message' => 'Error',
@@ -163,6 +163,38 @@ class TransactionList extends Component
         $this->dispatchBrowserEvent('banner-message', [
             'style' => 'success',
             'message' => 'Saved',
+        ]);
+    }
+
+    public function confirmTransactionDeletion(Transaction $transaction): void
+    {
+        $this->transaction = $transaction;
+
+        $this->confirmingTransactionDeletion = true;
+    }
+
+    public function deleteTransaction(): void
+    {
+        $this->authorize('delete', $this->transaction);
+
+        if (!$this->transaction->delete()) {
+            $this->dispatchBrowserEvent('banner-message', [
+                'style' => 'danger',
+                'message' => 'Error',
+            ]);
+
+            $this->confirmingTransactionDeletion = false;
+
+            return;
+        }
+
+        $this->emitSelf('transaction-deleted');
+
+        $this->confirmingTransactionDeletion = false;
+
+        $this->dispatchBrowserEvent('banner-message', [
+            'style' => 'success',
+            'message' => 'Deleted',
         ]);
     }
 
