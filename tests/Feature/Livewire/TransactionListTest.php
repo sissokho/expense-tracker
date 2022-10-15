@@ -571,6 +571,147 @@ class TransactionListTest extends TestCase
         ]);
     }
 
+    /**
+     * @test
+     * @dataProvider transactionTypeProvider
+     */
+    public function user_must_confirm_when_deleting_a_transaction(TransactionType $type): void
+    {
+        $user = User::factory()->create();
+
+        $transaction = Transaction::factory()
+            ->for($user)
+            ->create([
+                'type' => $type,
+            ]);
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => $type,
+        ])->call('confirmTransactionDeletion', $transaction);
+
+        $component->assertMethodWired('confirmTransactionDeletion')
+            ->assertSet('confirmingTransactionDeletion', true);
+    }
+
+    /**
+     * @test
+     * @dataProvider transactionTypeProvider
+     */
+    public function user_can_delete_one_of_his_transactions(TransactionType $type): void
+    {
+        $user = User::factory()->create();
+
+        $transaction = Transaction::factory()
+            ->for($user)
+            ->create([
+                'type' => $type,
+            ]);
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => $type,
+        ])->call('confirmTransactionDeletion', $transaction)
+            ->call('deleteTransaction');
+
+        $component->assertSet('transaction.id', $transaction->id)
+            ->assertSet('confirmingTransactionDeletion', false)
+            ->assertEmitted('transaction-deleted')
+            ->assertDispatchedBrowserEvent('transaction-deleted', ['id' => $transaction->id])
+            ->assertDispatchedBrowserEvent('banner-message', [
+                'style' => 'success',
+                'message' => 'Deleted',
+            ]);
+
+        $this->assertModelMissing($transaction);
+        $this->assertDatabaseCount('transactions', 0);
+    }
+
+    /**
+     * @test
+     * @dataProvider transactionTypeProvider
+     */
+    public function user_cannot_delete_a_transaction_that_does_not_belong_to_him(TransactionType $type): void
+    {
+        $transaction = Transaction::factory()
+            ->for(User::factory())
+            ->create([
+                'type' => $type,
+            ]);
+
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => $type,
+        ])->call('confirmTransactionDeletion', $transaction)
+            ->call('deleteTransaction');
+
+        $component->assertForbidden();
+    }
+
+    /**
+     * @test
+     */
+    public function user_must_confirm_when_deleting_multiple_transactions(): void
+    {
+        Livewire::actingAs(User::factory()->make());
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Income,
+        ])->call('confirmMassTransactionDeletion');
+
+        $component->assertSet('massDeletion', true)
+            ->assertSet('confirmingTransactionDeletion', true);
+    }
+
+    /**
+     * @test
+     * @dataProvider transactionTypeProvider
+     */
+    public function user_can_delete_multiple_transactions(TransactionType $type): void
+    {
+        $user = User::factory()->create();
+
+        Transaction::factory()
+            ->count(10)
+            ->for($user)
+            ->create([
+                'type' => $type,
+            ]);
+
+        $selectedTransactions = [1, 2, 4];
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => $type,
+        ])->set('selectedTransactions', $selectedTransactions)
+            ->call('confirmMassTransactionDeletion')
+            ->call('deleteTransactions');
+
+        $component->assertSet('confirmingTransactionDeletion', false)
+            ->assertSet('massDeletion', false)
+            ->assertSet('selectedTransactions', [])
+            ->assertEmitted('transactions-deleted')
+            ->assertDispatchedBrowserEvent('banner-message', [
+                'style' => 'success',
+                'message' => 'Deleted',
+            ]);
+
+        $this->assertDatabaseCount('transactions', 7);
+        $this->assertDatabaseMissing('transactions', [
+            'id' => 1,
+        ]);
+        $this->assertDatabaseMissing('transactions', [
+            'id' => 2,
+        ]);
+        $this->assertDatabaseMissing('transactions', [
+            'id' => 4,
+        ]);
+    }
+
     public function invalidInputsProvider(): array
     {
         // Format: [[name, amount, category_id], property to test against, validation error rule]

@@ -32,9 +32,16 @@ class TransactionList extends Component
 
     public bool $openingTransactionForm = false;
 
+    public bool $confirmingTransactionDeletion = false;
+
+    public bool $massDeletion = false;
+
     public Transaction $transaction;
 
-    public ?int $category = null;
+    /**
+     * @var array<int, int>
+     */
+    public array $selectedTransactions = [];
 
     /**
      * @var array<string, string>
@@ -55,6 +62,8 @@ class TransactionList extends Component
      */
     protected $listeners = [
         'transaction-saved' => '$refresh',
+        'transaction-deleted' => '$refresh',
+        'transactions-deleted' => '$refresh',
     ];
 
     public function mount(TransactionType $type): void
@@ -163,6 +172,67 @@ class TransactionList extends Component
         $this->dispatchBrowserEvent('banner-message', [
             'style' => 'success',
             'message' => 'Saved',
+        ]);
+    }
+
+    public function confirmTransactionDeletion(Transaction $transaction): void
+    {
+        $this->transaction = $transaction;
+
+        $this->confirmingTransactionDeletion = true;
+    }
+
+    public function deleteTransaction(): void
+    {
+        $this->authorize('delete', $this->transaction);
+
+        $transactionId = $this->transaction->id;
+
+        if (! $this->transaction->delete()) {
+            $this->dispatchBrowserEvent('banner-message', [
+                'style' => 'danger',
+                'message' => 'Error',
+            ]);
+
+            $this->confirmingTransactionDeletion = false;
+
+            return;
+        }
+
+        $this->emitSelf('transaction-deleted');
+
+        $this->confirmingTransactionDeletion = false;
+
+        $this->dispatchBrowserEvent('transaction-deleted', ['id' => $transactionId]);
+
+        $this->dispatchBrowserEvent('banner-message', [
+            'style' => 'success',
+            'message' => 'Deleted',
+        ]);
+    }
+
+    public function confirmMassTransactionDeletion(): void
+    {
+        $this->massDeletion = true;
+
+        $this->confirmingTransactionDeletion = true;
+    }
+
+    public function deleteTransactions(): void
+    {
+        Transaction::destroy($this->selectedTransactions);
+
+        $this->emitSelf('transactions-deleted');
+
+        $this->confirmingTransactionDeletion = false;
+
+        $this->massDeletion = false;
+
+        $this->selectedTransactions = [];
+
+        $this->dispatchBrowserEvent('banner-message', [
+            'style' => 'success',
+            'message' => 'Deleted',
         ]);
     }
 

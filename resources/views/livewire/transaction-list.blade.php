@@ -1,5 +1,6 @@
 <div class="space-y-2">
-    <div class="overflow-x-auto relative p-2 space-y-4 sm:rounded-lg">
+    <div class="overflow-x-auto relative p-2 space-y-4 sm:rounded-lg" x-data="multipleSelection"
+        x-on:transaction-deleted.window="unselect(event.detail.id)">
         <div class="flex flex-col gap-4 md:flex-row md:gap-0">
             <div class="bg-white dark:bg-gray-900">
                 <label for="table-search" class="sr-only">Search</label>
@@ -26,6 +27,10 @@
                         <option value="50">50</option>
                     </select>
                 </div>
+                <x-jet-button class="bg-red-700 hover:bg-red-800" style="display: none;" x-show="totalSelected"
+                    wire:click.prevent="confirmMassTransactionDeletion">Delete
+                    (<span x-text="(totalSelected)"></span>)
+                </x-jet-button>
                 <x-jet-button class="bg-indigo-700 hover:bg-indigo-800" wire:click="openTransactionForm">New
                 </x-jet-button>
             </div>
@@ -42,7 +47,8 @@
                     <th scope="col" class="p-4">
                         <div class="flex items-center">
                             <input id="checkbox-toggle-all" type="checkbox"
-                                class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                x-on:click="toggleAll(event, @js($transactions->pluck('id')))">
                             <label for="checkbox-toggle-all" class="sr-only">checkbox</label>
                         </div>
                     </th>
@@ -70,6 +76,7 @@
                     <td class="p-4 w-4">
                         <div class="flex items-center" wire:key="transaction-checkbox-{{ $transaction->id }}">
                             <input id="transaction-{{ $transaction->id }}-checkbox" type="checkbox"
+                                x-on:change="toggle(event, @js($transaction->id))" data-id="{{ $transaction->id }}"
                                 class="checkbox w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                             <label for="transaction-{{ $transaction->id }}-checkbox" class="sr-only">checkbox</label>
                         </div>
@@ -91,7 +98,8 @@
                     <td class="text-right py-4 px-6 space-x-2">
                         <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
                             wire:click.prevent="openTransactionForm({{ $transaction }})">Edit</a>
-                        <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline">Delete</a>
+                        <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline"
+                            wire:click.prevent="confirmTransactionDeletion({{ $transaction }})">Delete</a>
                     </td>
                 </tr>
                 @endforeach
@@ -149,4 +157,89 @@
             </x-jet-button>
         </x-slot>
     </x-jet-dialog-modal>
+
+    {{-- Delete Transaction confirmation Modal --}}
+    <x-jet-dialog-modal wire:model="confirmingTransactionDeletion">
+        <x-slot name="title">
+            @if ($massDeletion)
+            {{ __('Delete Transactions') }}
+            @else
+            {{ __('Delete Transaction') }}
+            @endif
+        </x-slot>
+
+        <x-slot name="content">
+            @if ($massDeletion)
+            {{ __('Are you sure you want to delete these transactions') }}
+            @else
+            {{ __('Are you sure you want to delete this transaction?') }}
+            @endif
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-jet-secondary-button wire:click="$toggle('confirmingTransactionDeletion')" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-jet-secondary-button>
+
+            @if ($massDeletion)
+            <x-jet-danger-button class="ml-3" wire:click="deleteTransactions" wire:loading.attr="disabled">
+                {{ __('Delete Transactions') }}
+            </x-jet-danger-button>
+            @else
+            <x-jet-danger-button class="ml-3" wire:click="deleteTransaction" wire:loading.attr="disabled">
+                {{ __('Delete Transaction') }}
+            </x-jet-danger-button>
+            @endif
+        </x-slot>
+    </x-jet-dialog-modal>
 </div>
+
+@pushOnce('scripts')
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('multipleSelection', () => ({
+            selected: @entangle('selectedTransactions'),
+            totalSelected: 0,
+            toggleAllCheckbox: document.getElementById('checkbox-toggle-all'),
+
+            init() {
+                this.$watch('selected', () => {
+                    this.totalSelected = this.selected.length;
+                });
+            },
+
+            unselect(id) {
+                this.selected = this.selected.filter(itemId => id !== itemId);
+
+                this.toggleAllCheckbox.checked = false;
+            },
+
+            toggle(event, id) {
+                if (event.target.checked) {
+                    this.selected.push(id);
+                } else {
+                    this.unselect(id);
+                }
+            },
+
+            toggleAll(event, ids) {
+                if (event.target.checked) {
+                    this.selected = ids;
+                } else {
+                    this.selected = [];
+                }
+
+                this.toggleCheckboxes();
+            },
+
+            toggleCheckboxes() {
+                [...document.querySelectorAll('.checkbox')].forEach(checkbox => {
+                    const id = parseInt(checkbox.dataset.id);
+
+                    checkbox.checked = this.selected.includes(id);
+                });
+            },
+        }));
+    });
+</script>
+@endPushOnce

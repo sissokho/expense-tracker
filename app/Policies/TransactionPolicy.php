@@ -49,16 +49,9 @@ class TransactionPolicy
         return $user->id === $transaction->user_id;
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Transaction  $transaction
-     * @return \Illuminate\Auth\Access\Response|bool
-     */
-    public function delete(User $user, Transaction $transaction)
+    public function delete(User $user, Transaction $transaction): bool
     {
-        // @phpstan-ignore-line
+        return $this->update($user, $transaction);
     }
 
     /**
