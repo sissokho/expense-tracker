@@ -582,13 +582,13 @@ class TransactionListTest extends TestCase
         $transaction = Transaction::factory()
             ->for($user)
             ->create([
-                'type' => $type
+                'type' => $type,
             ]);
 
         Livewire::actingAs($user);
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => $type
+            'type' => $type,
         ])->call('confirmTransactionDeletion', $transaction);
 
         $component->assertMethodWired('confirmTransactionDeletion')
@@ -606,13 +606,13 @@ class TransactionListTest extends TestCase
         $transaction = Transaction::factory()
             ->for($user)
             ->create([
-                'type' => $type
+                'type' => $type,
             ]);
 
         Livewire::actingAs($user);
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => $type
+            'type' => $type,
         ])->call('confirmTransactionDeletion', $transaction)
             ->call('deleteTransaction');
 
@@ -638,13 +638,13 @@ class TransactionListTest extends TestCase
         $transaction = Transaction::factory()
             ->for(User::factory())
             ->create([
-                'type' => $type
+                'type' => $type,
             ]);
 
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => $type
+            'type' => $type,
         ])->call('confirmTransactionDeletion', $transaction)
             ->call('deleteTransaction');
 
@@ -659,7 +659,7 @@ class TransactionListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Income
+            'type' => TransactionType::Income,
         ])->call('confirmMassTransactionDeletion');
 
         $component->assertSet('massDeletion', true)
@@ -678,7 +678,7 @@ class TransactionListTest extends TestCase
             ->count(10)
             ->for($user)
             ->create([
-                'type' => $type
+                'type' => $type,
             ]);
 
         $selectedTransactions = [1, 2, 4];
@@ -686,7 +686,7 @@ class TransactionListTest extends TestCase
         Livewire::actingAs($user);
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => $type
+            'type' => $type,
         ])->set('selectedTransactions', $selectedTransactions)
             ->call('confirmMassTransactionDeletion')
             ->call('deleteTransactions');

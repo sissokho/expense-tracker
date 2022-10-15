@@ -154,7 +154,7 @@ class TransactionList extends Component
             'type' => $this->type,
         ]);
 
-        if (!$this->transaction->save()) {
+        if (! $this->transaction->save()) {
             $this->dispatchBrowserEvent('banner-message', [
                 'style' => 'danger',
                 'message' => 'Error',
@@ -188,7 +188,7 @@ class TransactionList extends Component
 
         $transactionId = $this->transaction->id;
 
-        if (!$this->transaction->delete()) {
+        if (! $this->transaction->delete()) {
             $this->dispatchBrowserEvent('banner-message', [
                 'style' => 'danger',
                 'message' => 'Error',
