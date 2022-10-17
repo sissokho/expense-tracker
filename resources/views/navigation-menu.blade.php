@@ -157,10 +157,10 @@
             <x-jet-responsive-nav-link href="{{ route('categories.index') }}" :active="request()->routeIs('categories.index')">
                 {{ __('Categories') }}
             </x-jet-responsive-nav-link>
-            <x-jet-responsive-nav-link href="{{ route('categories.index') }}" :active="request()->routeIs('incomes')">
+            <x-jet-responsive-nav-link href="{{ route('incomes') }}" :active="request()->routeIs('incomes')">
                 {{ __('Incomes') }}
             </x-jet-responsive-nav-link>
-            <x-jet-responsive-nav-link href="{{ route('categories.index') }}" :active="request()->routeIs('expenses')">
+            <x-jet-responsive-nav-link href="{{ route('expenses') }}" :active="request()->routeIs('expenses')">
                 {{ __('Expenses') }}
             </x-jet-responsive-nav-link>
         </div>
