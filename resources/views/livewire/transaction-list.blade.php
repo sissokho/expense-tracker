@@ -38,7 +38,7 @@
 
         @if ($transactions->isEmpty())
         <div class="text-center text-gray-500">
-            No {{ str($type->name)->plural() }} Found
+            No {{ $type->plural() }} Found
         </div>
         @else
         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">

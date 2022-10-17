@@ -16,4 +16,12 @@ enum TransactionType: int
             TransactionType::Expense => 'bg-red-100 text-red-800',
         };
     }
+
+    public function plural(): string
+    {
+        return match ($this) {
+            TransactionType::Income => 'Incomes',
+            TransactionType::Expense => 'Expenses',
+        };
+    }
 }
