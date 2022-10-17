@@ -189,6 +189,7 @@ class CategoryList extends Component
         return view('livewire.category-list', [
             'categories' => $this->user->categories()
                 ->search($this->search)
+                ->latest()
                 ->paginate($this->perPage),
         ]);
     }
