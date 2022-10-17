@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Integration;
+namespace Tests\Integration\Models;
 
 use App\Models\Category;
 use App\Models\User;
