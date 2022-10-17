@@ -17,7 +17,7 @@ class CategoryTest extends TestCase
      */
     public function it_redirects_unauthenticated_users_to_login_page(): void
     {
-        $response = $this->get(route('categories.index'));
+        $response = $this->get(route('categories'));
 
         $response->assertRedirect(route('login'));
     }
@@ -32,10 +32,10 @@ class CategoryTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->get(route('categories.index'));
+        $response = $this->get(route('categories'));
 
         $response->assertStatus(200)
-            ->assertViewIs('categories.index');
+            ->assertViewIs('categories');
     }
 
     /**
@@ -48,7 +48,7 @@ class CategoryTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->get(route('categories.index'));
+        $response = $this->get(route('categories'));
 
         $response->assertSeeLivewire('category-list');
     }

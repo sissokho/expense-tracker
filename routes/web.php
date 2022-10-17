@@ -31,7 +31,7 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 
-    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('/categories', CategoryController::class)->name('categories');
     Route::get('/expenses', ExpenseController::class)->name('expenses');
     Route::get('/incomes', IncomeController::class)->name('incomes');
 });
