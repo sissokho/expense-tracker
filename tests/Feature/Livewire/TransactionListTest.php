@@ -475,7 +475,7 @@ class TransactionListTest extends TestCase
             ->create([
                 'name' => 'Bana',
                 'amount' => '2', // 2 USD
-                'type' => $type
+                'type' => $type,
             ]);
 
         $fruitCategory = Category::factory()
