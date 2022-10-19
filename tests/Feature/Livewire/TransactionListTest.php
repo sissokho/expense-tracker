@@ -19,30 +19,20 @@ class TransactionListTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
-    public function the_component_can_be_rendered_with_expenses(): void
+    /**
+     * @test
+     * @dataProvider transactionTypeProvider
+     */
+    public function the_component_can_be_rendered_with_the_correct_transaction_type(TransactionType $type): void
     {
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Expense,
+            'type' => $type,
         ]);
 
         $component->assertStatus(200)
-            ->assertSet('type', TransactionType::Expense);
-    }
-
-    /** @test */
-    public function the_component_can_be_rendered_with_incomes(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Income,
-        ]);
-
-        $component->assertStatus(200)
-            ->assertSet('type', TransactionType::Income);
+            ->assertSet('type', $type);
     }
 
     /**
@@ -335,7 +325,7 @@ class TransactionListTest extends TestCase
         $component->assertPropertyWired('transaction.name')
             ->assertPropertyWired('transaction.amount')
             ->assertPropertyWired('transaction.category_id')
-            ->assertMethodWired('openTransactionForm')
+            ->assertMethodWired('openModalForm')
             ->assertMethodWired('saveTransaction');
     }
 
@@ -350,7 +340,7 @@ class TransactionListTest extends TestCase
             'type' => TransactionType::Expense,
         ]);
 
-        $component->assertSet('openingTransactionForm', false);
+        $component->assertSet('openingModalForm', false);
     }
 
     /**
@@ -362,9 +352,9 @@ class TransactionListTest extends TestCase
 
         $component = Livewire::test(TransactionList::class, [
             'type' => TransactionType::Income,
-        ])->call('openTransactionForm');
+        ])->call('openModalForm');
 
-        $component->assertSet('openingTransactionForm', true)
+        $component->assertSet('openingModalForm', true)
             ->assertDispatchedBrowserEvent('opening-transaction-form');
     }
 
@@ -377,7 +367,7 @@ class TransactionListTest extends TestCase
 
         $component = Livewire::test(TransactionList::class, [
             'type' => TransactionType::Expense,
-        ])->call('openTransactionForm');
+        ])->call('openModalForm');
 
         $component->assertSet('transaction.id', null)
             ->assertSet('transaction.name', null)
@@ -393,6 +383,7 @@ class TransactionListTest extends TestCase
         $user = User::factory()->create();
 
         $transaction = Transaction::factory()
+            ->income()
             ->for($user)
             ->create();
 
@@ -400,7 +391,7 @@ class TransactionListTest extends TestCase
 
         $component = Livewire::test(TransactionList::class, [
             'type' => TransactionType::Income,
-        ])->call('openTransactionForm', $transaction);
+        ])->call('openModalForm', $transaction);
 
         $component->assertSet('transaction.id', $transaction->id)
             ->assertSet('transaction.name', $transaction->name)
@@ -417,11 +408,11 @@ class TransactionListTest extends TestCase
 
         $component = Livewire::test(TransactionList::class, [
             'type' => TransactionType::Expense,
-        ])->set('openingTransactionForm', true);
+        ])->set('openingModalForm', true);
 
-        $component->assertSet('openingTransactionForm', true)
-            ->set('openingTransactionForm', false)
-            ->assertSet('openingTransactionForm', false);
+        $component->assertSet('openingModalForm', true)
+            ->set('openingModalForm', false)
+            ->assertSet('openingModalForm', false);
     }
 
     /**
@@ -441,14 +432,14 @@ class TransactionListTest extends TestCase
         $component = Livewire::test(TransactionList::class, [
             'type' => $type,
         ])
-            ->call('openTransactionForm')
+            ->call('openModalForm')
             ->set('transaction.name', 'Banana')
             ->set('transaction.amount', 1) // 1 USD
             ->set('transaction.category_id', $category->id)
             ->call('saveTransaction');
 
-        $component->assertSet('openingTransactionForm', false)
-            ->assertEmitted('transaction-saved')
+        $component->assertSet('openingModalForm', false)
+            ->assertEmitted('model-saved')
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
                 'message' => 'Saved',
@@ -484,6 +475,7 @@ class TransactionListTest extends TestCase
             ->create([
                 'name' => 'Bana',
                 'amount' => '2', // 2 USD
+                'type' => $type,
             ]);
 
         $fruitCategory = Category::factory()
@@ -496,14 +488,14 @@ class TransactionListTest extends TestCase
 
         $component = Livewire::test(TransactionList::class, [
             'type' => $type,
-        ])->call('openTransactionForm', $transaction)
+        ])->call('openModalForm', $transaction)
             ->set('transaction.name', 'Banana')
             ->set('transaction.amount', 1) // 1 USD
             ->set('transaction.category_id', $fruitCategory->id)
             ->call('saveTransaction');
 
-        $component->assertSet('openingTransactionForm', false)
-            ->assertEmitted('transaction-saved')
+        $component->assertSet('openingModalForm', false)
+            ->assertEmitted('model-saved')
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
                 'message' => 'Saved',
@@ -525,6 +517,7 @@ class TransactionListTest extends TestCase
     public function user_cannot_edit_a_category_that_does_not_belong_to_him(): void
     {
         $transaction = Transaction::factory()
+            ->income()
             ->for(User::factory()->create())
             ->create();
 
@@ -532,7 +525,7 @@ class TransactionListTest extends TestCase
 
         $component = Livewire::test(TransactionList::class, [
             'type' => TransactionType::Income,
-        ])->call('openTransactionForm', $transaction)
+        ])->call('openModalForm', $transaction)
             ->set('transaction.name', 'Health')
             ->set('transaction.amount', 1)
             ->call('saveTransaction');
@@ -560,7 +553,7 @@ class TransactionListTest extends TestCase
 
         $component = Livewire::test(TransactionList::class, [
             'type' => TransactionType::Expense,
-        ])->call('openTransactionForm')
+        ])->call('openModalForm')
             ->set('transaction.name', $inputs[0])
             ->set('transaction.amount', $inputs[1])
             ->set('transaction.category_id', $inputs[2])
@@ -592,7 +585,7 @@ class TransactionListTest extends TestCase
         ])->call('confirmTransactionDeletion', $transaction);
 
         $component->assertMethodWired('confirmTransactionDeletion')
-            ->assertSet('confirmingTransactionDeletion', true);
+            ->assertSet('confirmingModelDeletion', true);
     }
 
     /**
@@ -617,9 +610,9 @@ class TransactionListTest extends TestCase
             ->call('deleteTransaction');
 
         $component->assertSet('transaction.id', $transaction->id)
-            ->assertSet('confirmingTransactionDeletion', false)
-            ->assertEmitted('transaction-deleted')
-            ->assertDispatchedBrowserEvent('transaction-deleted', ['id' => $transaction->id])
+            ->assertSet('confirmingModelDeletion', false)
+            ->assertEmitted('model-deleted')
+            ->assertDispatchedBrowserEvent('model-deleted', ['id' => $transaction->id])
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
                 'message' => 'Deleted',
@@ -660,10 +653,10 @@ class TransactionListTest extends TestCase
 
         $component = Livewire::test(TransactionList::class, [
             'type' => TransactionType::Income,
-        ])->call('confirmMassTransactionDeletion');
+        ])->call('confirmMassDeletion');
 
         $component->assertSet('massDeletion', true)
-            ->assertSet('confirmingTransactionDeletion', true);
+            ->assertSet('confirmingModelDeletion', true);
     }
 
     /**
@@ -681,20 +674,20 @@ class TransactionListTest extends TestCase
                 'type' => $type,
             ]);
 
-        $selectedTransactions = [1, 2, 4];
+        $selectedIdsForDeletion = [1, 2, 4];
 
         Livewire::actingAs($user);
 
         $component = Livewire::test(TransactionList::class, [
             'type' => $type,
-        ])->set('selectedTransactions', $selectedTransactions)
-            ->call('confirmMassTransactionDeletion')
+        ])->set('selectedIdsForDeletion', $selectedIdsForDeletion)
+            ->call('confirmMassDeletion')
             ->call('deleteTransactions');
 
-        $component->assertSet('confirmingTransactionDeletion', false)
+        $component->assertSet('confirmingModelDeletion', false)
             ->assertSet('massDeletion', false)
-            ->assertSet('selectedTransactions', [])
-            ->assertEmitted('transactions-deleted')
+            ->assertSet('selectedIdsForDeletion', [])
+            ->assertEmitted('models-deleted')
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
                 'message' => 'Deleted',

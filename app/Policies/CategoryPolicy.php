@@ -7,7 +7,6 @@ namespace App\Policies;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Auth\Access\Response;
 
 class CategoryPolicy
 {
@@ -41,12 +40,12 @@ class CategoryPolicy
         // @phpstan-ignore-line
     }
 
-    public function update(User $user, Category $category): Response|bool
+    public function update(User $user, Category $category): bool
     {
         return $user->id === $category->user_id;
     }
 
-    public function delete(User $user, Category $category): Response|bool
+    public function delete(User $user, Category $category): bool
     {
         return $this->update($user, $category);
     }

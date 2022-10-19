@@ -17,7 +17,7 @@
                     </x-jet-nav-link>
                 </div>
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    <x-jet-nav-link href="{{ route('categories.index') }}" :active="request()->routeIs('categories.index')">
+                    <x-jet-nav-link href="{{ route('categories') }}" :active="request()->routeIs('categories')">
                         {{ __('Categories') }}
                     </x-jet-nav-link>
                 </div>
@@ -154,13 +154,13 @@
             <x-jet-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-jet-responsive-nav-link>
-            <x-jet-responsive-nav-link href="{{ route('categories.index') }}" :active="request()->routeIs('categories.index')">
+            <x-jet-responsive-nav-link href="{{ route('categories') }}" :active="request()->routeIs('categories')">
                 {{ __('Categories') }}
             </x-jet-responsive-nav-link>
-            <x-jet-responsive-nav-link href="{{ route('categories.index') }}" :active="request()->routeIs('incomes')">
+            <x-jet-responsive-nav-link href="{{ route('incomes') }}" :active="request()->routeIs('incomes')">
                 {{ __('Incomes') }}
             </x-jet-responsive-nav-link>
-            <x-jet-responsive-nav-link href="{{ route('categories.index') }}" :active="request()->routeIs('expenses')">
+            <x-jet-responsive-nav-link href="{{ route('expenses') }}" :active="request()->routeIs('expenses')">
                 {{ __('Expenses') }}
             </x-jet-responsive-nav-link>
         </div>
