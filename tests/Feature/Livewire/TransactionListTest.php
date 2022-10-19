@@ -19,30 +19,20 @@ class TransactionListTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
-    public function the_component_can_be_rendered_with_expenses(): void
+    /**
+     * @test
+     * @dataProvider transactionTypeProvider
+     */
+    public function the_component_can_be_rendered_with_the_correct_transaction_type(TransactionType $type): void
     {
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Expense,
+            'type' => $type,
         ]);
 
         $component->assertStatus(200)
-            ->assertSet('type', TransactionType::Expense);
-    }
-
-    /** @test */
-    public function the_component_can_be_rendered_with_incomes(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Income,
-        ]);
-
-        $component->assertStatus(200)
-            ->assertSet('type', TransactionType::Income);
+            ->assertSet('type', $type);
     }
 
     /**
@@ -393,6 +383,7 @@ class TransactionListTest extends TestCase
         $user = User::factory()->create();
 
         $transaction = Transaction::factory()
+            ->income()
             ->for($user)
             ->create();
 
@@ -484,6 +475,7 @@ class TransactionListTest extends TestCase
             ->create([
                 'name' => 'Bana',
                 'amount' => '2', // 2 USD
+                'type' => $type
             ]);
 
         $fruitCategory = Category::factory()
@@ -525,6 +517,7 @@ class TransactionListTest extends TestCase
     public function user_cannot_edit_a_category_that_does_not_belong_to_him(): void
     {
         $transaction = Transaction::factory()
+            ->income()
             ->for(User::factory()->create())
             ->create();
 

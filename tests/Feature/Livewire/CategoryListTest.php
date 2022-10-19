@@ -6,6 +6,7 @@ namespace Tests\Feature\Livewire;
 
 use App\Http\Livewire\CategoryList;
 use App\Models\Category;
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +19,7 @@ class CategoryListTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function it_renders_the_component(): void
+    public function the_component_can_be_rendered(): void
     {
         Livewire::actingAs(User::factory()->make());
 
@@ -30,13 +31,13 @@ class CategoryListTest extends TestCase
     /**
      * @test
      */
-    public function it_displays_the_categories(): void
+    public function user_can_see_his_categories(): void
     {
         $user = User::factory()->create();
 
         $categories = Category::factory()
             ->for($user)
-            ->count(13)
+            ->count(10)
             ->create();
 
         Livewire::actingAs($user);
@@ -52,7 +53,7 @@ class CategoryListTest extends TestCase
     /**
      * @test
      */
-    public function it_only_displays_categories_of_the_current_logged_in_user(): void
+    public function only_current_logged_in_user_categories_are_displayed(): void
     {
         $user = User::factory()->create();
 
@@ -89,18 +90,23 @@ class CategoryListTest extends TestCase
     /**
      * @test
      */
-    public function it_paginates_through_the_categories(): void
+    public function categories_can_be_paginated(): void
     {
         $user = User::factory()->create();
 
-        $categories = Category::factory()
+        $recentCategories = Category::factory()
             ->for($user)
-            ->count(13)
+            ->count(10)
+            ->sequence(fn ($sequence) => ['name' => "Category {$sequence->index}"])
             ->create();
 
-        $shoesCategory = Category::factory()
+        $olderCategories = Category::factory()
             ->for($user)
-            ->create(['name' => 'shoes']);
+            ->count(2)
+            ->state(new Sequence(
+                ['created_at' => now()->subDay()]
+            ))
+            ->create();
 
         Livewire::actingAs($user);
 
@@ -108,16 +114,16 @@ class CategoryListTest extends TestCase
             ->test(CategoryList::class);
 
         $component->assertSet('page', 2)
-            ->assertDontSee($categories[0]->name)
-            ->assertDontSee($categories[9]->name)
-            ->assertSee($categories[10]->name)
-            ->assertSee($shoesCategory->name);
+            ->assertSee($olderCategories[0]->name)
+            ->assertSee($olderCategories[1]->name);
+
+        $recentCategories->each(fn (Category $category) => $component->assertDontSee($category->name));
     }
 
     /**
      * @test
      */
-    public function it_updates_pagination_according_to_users_choice(): void
+    public function user_can_choose_the_number_of_categories_to_show_per_page(): void
     {
         Livewire::actingAs(User::factory()->make());
 
@@ -131,7 +137,7 @@ class CategoryListTest extends TestCase
     /**
      * @test
      */
-    public function it_performs_search(): void
+    public function user_can_search_categories_by_their_name(): void
     {
         $user = User::factory()->create();
 
@@ -157,7 +163,7 @@ class CategoryListTest extends TestCase
     /**
      * @test
      */
-    public function it_resets_page_number_to_one_when_a_search_is_perform(): void
+    public function page_number_is_reset_to_one_when_user_perform_a_search(): void
     {
         $user = User::factory()->create();
 
@@ -175,18 +181,6 @@ class CategoryListTest extends TestCase
             ->set('search', 'banana')
             ->assertSet('search', 'banana')
             ->assertSet('page', 1);
-    }
-
-    /**
-     * @test
-     */
-    public function component_contains_creation_and_edit_form_modal(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(CategoryList::class);
-
-        $component->assertContainsBladeComponent('jet-dialog-modal');
     }
 
     /**
@@ -424,6 +418,12 @@ class CategoryListTest extends TestCase
             ->for($user)
             ->create();
 
+        // Related transactions will be deleted as well
+        Transaction::factory()
+            ->for($user)
+            ->for($category)
+            ->create();
+
         Livewire::actingAs($user);
 
         $component = Livewire::test(CategoryList::class)
@@ -441,6 +441,7 @@ class CategoryListTest extends TestCase
 
         $this->assertModelMissing($category);
         $this->assertDatabaseCount('categories', 0);
+        $this->assertDatabaseCount('transactions', 0);
     }
 
     /**
