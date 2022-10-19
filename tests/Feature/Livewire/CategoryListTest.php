@@ -199,7 +199,7 @@ class CategoryListTest extends TestCase
         $component = Livewire::test(CategoryList::class);
 
         $component->assertPropertyWired('category.name')
-            ->assertMethodWired('openCategoryForm')
+            ->assertMethodWired('openModalForm')
             ->assertMethodWired('saveCategory');
     }
 
@@ -212,7 +212,7 @@ class CategoryListTest extends TestCase
 
         $component = Livewire::test(CategoryList::class);
 
-        $component->assertSet('openingCategoryForm', false);
+        $component->assertSet('openingModalForm', false);
     }
 
     /**
@@ -223,9 +223,9 @@ class CategoryListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(CategoryList::class)
-            ->call('openCategoryForm');
+            ->call('openModalForm');
 
-        $component->assertSet('openingCategoryForm', true)
+        $component->assertSet('openingModalForm', true)
             ->assertDispatchedBrowserEvent('opening-category-form');
     }
 
@@ -237,7 +237,7 @@ class CategoryListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(CategoryList::class)
-            ->call('openCategoryForm');
+            ->call('openModalForm');
 
         $component->assertSet('category.id', null)
             ->assertSet('category.name', null);
@@ -257,7 +257,7 @@ class CategoryListTest extends TestCase
         Livewire::actingAs($user);
 
         $component = Livewire::test(CategoryList::class)
-            ->call('openCategoryForm', $category);
+            ->call('openModalForm', $category);
 
         $component->assertSet('category.id', $category->id)
             ->assertSet('category.name', $category->name);
@@ -271,11 +271,11 @@ class CategoryListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(CategoryList::class)
-            ->set('openingCategoryForm', true);
+            ->set('openingModalForm', true);
 
-        $component->assertSet('openingCategoryForm', true)
-            ->set('openingCategoryForm', false)
-            ->assertSet('openingCategoryForm', false);
+        $component->assertSet('openingModalForm', true)
+            ->set('openingModalForm', false)
+            ->assertSet('openingModalForm', false);
     }
 
     /**
@@ -286,12 +286,12 @@ class CategoryListTest extends TestCase
         Livewire::actingAs(User::factory()->create());
 
         $component = Livewire::test(CategoryList::class)
-            ->call('openCategoryForm')
+            ->call('openModalForm')
             ->set('category.name', 'Health')
             ->call('saveCategory');
 
-        $component->assertSet('openingCategoryForm', false)
-            ->assertEmitted('category-saved')
+        $component->assertSet('openingModalForm', false)
+            ->assertEmitted('model-saved')
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
                 'message' => 'Saved',
@@ -320,12 +320,12 @@ class CategoryListTest extends TestCase
         Livewire::actingAs($user);
 
         $component = Livewire::test(CategoryList::class)
-            ->call('openCategoryForm', $category)
+            ->call('openModalForm', $category)
             ->set('category.name', 'Health')
             ->call('saveCategory');
 
-        $component->assertSet('openingCategoryForm', false)
-            ->assertEmitted('category-saved')
+        $component->assertSet('openingModalForm', false)
+            ->assertEmitted('model-saved')
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
                 'message' => 'Saved',
@@ -352,7 +352,7 @@ class CategoryListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(CategoryList::class)
-            ->call('openCategoryForm', $category)
+            ->call('openModalForm', $category)
             ->set('category.name', 'Health')
             ->call('saveCategory');
 
@@ -367,7 +367,7 @@ class CategoryListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(CategoryList::class)
-            ->call('openCategoryForm')
+            ->call('openModalForm')
             ->set('category.name', '')
             ->call('saveCategory');
 
@@ -384,7 +384,7 @@ class CategoryListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(CategoryList::class)
-            ->call('openCategoryForm')
+            ->call('openModalForm')
             ->set('category.name', Str::of('h')->repeat(256))
             ->call('saveCategory');
 
@@ -410,7 +410,7 @@ class CategoryListTest extends TestCase
             ->call('confirmCategoryDeletion', $category);
 
         $component->assertMethodWired('confirmCategoryDeletion')
-            ->assertSet('confirmingCategoryDeletion', true);
+            ->assertSet('confirmingModelDeletion', true);
     }
 
     /**
@@ -431,9 +431,9 @@ class CategoryListTest extends TestCase
             ->call('deleteCategory');
 
         $component->assertSet('category.id', $category->id)
-            ->assertSet('confirmingCategoryDeletion', false)
-            ->assertEmitted('category-deleted')
-            ->assertDispatchedBrowserEvent('category-deleted', ['id' => $category->id])
+            ->assertSet('confirmingModelDeletion', false)
+            ->assertEmitted('model-deleted')
+            ->assertDispatchedBrowserEvent('model-deleted', ['id' => $category->id])
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
                 'message' => 'Deleted',
@@ -469,10 +469,10 @@ class CategoryListTest extends TestCase
         Livewire::actingAs(User::factory()->make());
 
         $component = Livewire::test(CategoryList::class)
-            ->call('confirmMassCategoryDeletion');
+            ->call('confirmMassDeletion');
 
         $component->assertSet('massDeletion', true)
-            ->assertSet('confirmingCategoryDeletion', true);
+            ->assertSet('confirmingModelDeletion', true);
     }
 
     /**
@@ -487,19 +487,19 @@ class CategoryListTest extends TestCase
             ->for($user)
             ->create();
 
-        $selectedCategories = [1, 2, 4];
+        $selectedIdsForDeletion = [1, 2, 4];
 
         Livewire::actingAs($user);
 
         $component = Livewire::test(CategoryList::class)
-            ->set('selectedCategories', $selectedCategories)
-            ->call('confirmMassCategoryDeletion')
+            ->set('selectedIdsForDeletion', $selectedIdsForDeletion)
+            ->call('confirmMassDeletion')
             ->call('deleteCategories');
 
-        $component->assertSet('confirmingCategoryDeletion', false)
+        $component->assertSet('confirmingModelDeletion', false)
             ->assertSet('massDeletion', false)
-            ->assertSet('selectedCategories', [])
-            ->assertEmitted('categories-deleted')
+            ->assertSet('selectedIdsForDeletion', [])
+            ->assertEmitted('models-deleted')
             ->assertDispatchedBrowserEvent('banner-message', [
                 'style' => 'success',
                 'message' => 'Deleted',

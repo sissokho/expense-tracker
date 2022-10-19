@@ -12,58 +12,24 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use Livewire\Component;
-use Livewire\WithPagination;
 
 /**
  * @property-read User $user
  * @property-read Collection<int, Category> $categories
  */
-class TransactionList extends Component
+class TransactionList extends DataTable
 {
-    use WithPagination;
     use AuthorizesRequests;
 
     public TransactionType $type;
 
-    public string $search = '';
-
-    public int $perPage = 10;
-
-    public bool $openingTransactionForm = false;
-
-    public bool $confirmingTransactionDeletion = false;
-
-    public bool $massDeletion = false;
-
     public Transaction $transaction;
-
-    /**
-     * @var array<int, int>
-     */
-    public array $selectedTransactions = [];
 
     /**
      * @var array<string, string>
      */
     protected $messages = [
         'transaction.category_id.in' => 'Please select one of your categories.',
-    ];
-
-    /**
-     * @var array<string, array<string, string>>
-     */
-    protected $queryString = [
-        'search' => ['except' => ''],
-    ];
-
-    /**
-     * @var array<string, string>
-     */
-    protected $listeners = [
-        'transaction-saved' => '$refresh',
-        'transaction-deleted' => '$refresh',
-        'transactions-deleted' => '$refresh',
     ];
 
     public function mount(TransactionType $type): void
@@ -86,16 +52,6 @@ class TransactionList extends Component
                 Rule::in($this->categories->pluck('id')),
             ],
         ];
-    }
-
-    public function updatingSearch(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatingPerPage(): void
-    {
-        $this->resetPage();
     }
 
     public function getUserProperty(): User
@@ -128,7 +84,7 @@ class TransactionList extends Component
             ->all();
     }
 
-    public function openTransactionForm(Transaction $transaction = null): void
+    public function openModalForm(?Transaction $transaction = null): void
     {
         $this->resetErrorBag();
 
@@ -136,7 +92,7 @@ class TransactionList extends Component
 
         $this->dispatchBrowserEvent('opening-transaction-form');
 
-        $this->openingTransactionForm = true;
+        $this->openingModalForm = true;
     }
 
     public function saveTransaction(): void
@@ -155,31 +111,25 @@ class TransactionList extends Component
         ]);
 
         if (! $this->transaction->save()) {
-            $this->dispatchBrowserEvent('banner-message', [
-                'style' => 'danger',
-                'message' => 'Error',
-            ]);
+            $this->dangerBannerEvent('Error');
 
-            $this->openingTransactionForm = false;
+            $this->openingModalForm = false;
 
             return;
         }
 
-        $this->emitSelf('transaction-saved');
+        $this->emitSelf('model-saved');
 
-        $this->openingTransactionForm = false;
+        $this->openingModalForm = false;
 
-        $this->dispatchBrowserEvent('banner-message', [
-            'style' => 'success',
-            'message' => 'Saved',
-        ]);
+        $this->successBannerEvent('Saved');
     }
 
     public function confirmTransactionDeletion(Transaction $transaction): void
     {
         $this->transaction = $transaction;
 
-        $this->confirmingTransactionDeletion = true;
+        $this->confirmingModelDeletion = true;
     }
 
     public function deleteTransaction(): void
@@ -189,51 +139,31 @@ class TransactionList extends Component
         $transactionId = $this->transaction->id;
 
         if (! $this->transaction->delete()) {
-            $this->dispatchBrowserEvent('banner-message', [
-                'style' => 'danger',
-                'message' => 'Error',
-            ]);
+            $this->dangerBannerEvent('Error');
 
-            $this->confirmingTransactionDeletion = false;
+            $this->confirmingModelDeletion = false;
 
             return;
         }
 
-        $this->emitSelf('transaction-deleted');
+        $this->emitSelf('model-deleted');
 
-        $this->confirmingTransactionDeletion = false;
+        $this->confirmingModelDeletion = false;
 
-        $this->dispatchBrowserEvent('transaction-deleted', ['id' => $transactionId]);
+        $this->dispatchBrowserEvent('model-deleted', ['id' => $transactionId]);
 
-        $this->dispatchBrowserEvent('banner-message', [
-            'style' => 'success',
-            'message' => 'Deleted',
-        ]);
-    }
-
-    public function confirmMassTransactionDeletion(): void
-    {
-        $this->massDeletion = true;
-
-        $this->confirmingTransactionDeletion = true;
+        $this->successBannerEvent('Deleted');
     }
 
     public function deleteTransactions(): void
     {
-        Transaction::destroy($this->selectedTransactions);
+        Transaction::destroy($this->selectedIdsForDeletion);
 
-        $this->emitSelf('transactions-deleted');
+        $this->emitSelf('models-deleted');
 
-        $this->confirmingTransactionDeletion = false;
+        $this->reset(['confirmingModelDeletion', 'massDeletion', 'selectedIdsForDeletion']);
 
-        $this->massDeletion = false;
-
-        $this->selectedTransactions = [];
-
-        $this->dispatchBrowserEvent('banner-message', [
-            'style' => 'success',
-            'message' => 'Deleted',
-        ]);
+        $this->successBannerEvent('Deleted');
     }
 
     public function render(): View
