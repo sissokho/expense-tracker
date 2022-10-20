@@ -13,9 +13,6 @@
                 <x-oauth-github-link href="{{ route('oauth.redirect') }}">
                     Sign Up with Github
                 </x-oauth-github-link>
-                <x-oauth-google-link href="{{ route('oauth.redirect') }}">
-                    Sign Up with Google
-                </x-oauth-google-link>
             </div>
 
             <x-separator>OR</x-separator>
