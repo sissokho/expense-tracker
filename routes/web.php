@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\OAuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,4 +35,10 @@ Route::middleware([
     Route::get('/categories', CategoryController::class)->name('categories');
     Route::get('/expenses', ExpenseController::class)->name('expenses');
     Route::get('/incomes', IncomeController::class)->name('incomes');
+});
+
+Route::middleware('guest')->group(function () {
+    Route::get('/oauth/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
+
+    Route::get('/oauth/callback', [OAuthController::class, 'handleCallback'])->name('oauth.callback');
 });
