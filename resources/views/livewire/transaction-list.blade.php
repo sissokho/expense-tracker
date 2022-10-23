@@ -11,16 +11,16 @@
                     <th scope="col" class="p-4">
                         <x-datatable.select-all-checkbox :model-ids="$transactions->pluck('id')" />
                     </th>
-                    <x-datatable.header-cell>
+                    <x-datatable.header-cell sortable column-name="name" :sort-column="$sortColumn" :sort-direction="$sortDirection">
                         Name
                     </x-datatable.header-cell>
-                    <x-datatable.header-cell>
+                    <x-datatable.header-cell sortable column-name="amount" :sort-column="$sortColumn" :sort-direction="$sortDirection">
                         Amount
                     </x-datatable.header-cell>
-                    <x-datatable.header-cell>
+                    <x-datatable.header-cell sortable column-name="category_name" :sort-column="$sortColumn" :sort-direction="$sortDirection">
                         Category
                     </x-datatable.header-cell>
-                    <x-datatable.header-cell>
+                    <x-datatable.header-cell sortable column-name="created_at" :sort-column="$sortColumn" :sort-direction="$sortDirection">
                         Entry Date
                     </x-datatable.header-cell>
                     <x-datatable.header-cell>
@@ -43,15 +43,14 @@
                         </span>
                     </x-datatable.data-cell>
                     <x-datatable.data-cell>
-                        {{ $transaction->category->name }}
+                        {{ $transaction->category_name }}
                     </x-datatable.data-cell>
                     <x-datatable.data-cell>
                         {{ $transaction->created_at->toFormattedDateString() }}
                     </x-datatable.data-cell>
                     <x-datatable.action-cell>
                         <x-datatable.action-edit wire:click.prevent="openModalForm({{ $transaction }})" />
-                        <x-datatable.action-delete
-                            wire:click.prevent="confirmTransactionDeletion({{ $transaction }})" />
+                        <x-datatable.action-delete wire:click.prevent="confirmTransactionDeletion({{ $transaction }})" />
                     </x-datatable.action-cell>
                 </x-datatable.row>
                 @endforeach
@@ -74,24 +73,20 @@
             </x-slot>
 
             <x-slot name="content">
-                <div class="mt-4 space-y-4" x-data
-                    x-on:opening-transaction-form.window="setTimeout(() => $refs.name.focus(), 250)">
+                <div class="mt-4 space-y-4" x-data x-on:opening-transaction-form.window="setTimeout(() => $refs.name.focus(), 250)">
                     <div>
                         <x-jet-label for="name" value="{{ __('Name') }}" />
-                        <x-jet-input type="text" id="name" class="mt-1 block w-full" placeholder="{{ __('Health') }}"
-                            x-ref="name" wire:model.defer="transaction.name" />
+                        <x-jet-input type="text" id="name" class="mt-1 block w-full" placeholder="{{ __('Health') }}" x-ref="name" wire:model.defer="transaction.name" />
                         <x-jet-input-error for="transaction.name" class="mt-2" />
                     </div>
                     <div>
                         <x-jet-label for="amount" value="{{ __('Amount (in USD)') }}" />
-                        <x-jet-input type="text" id="amount" inputmode="decimal" class="mt-1 block w-full"
-                            placeholder="{{ __('20.5') }}" wire:model.defer="transaction.amount" />
+                        <x-jet-input type="text" id="amount" inputmode="decimal" class="mt-1 block w-full" placeholder="{{ __('20.5') }}" wire:model.defer="transaction.amount" />
                         <x-jet-input-error for="transaction.amount" class="mt-2" />
                     </div>
                     <div>
                         <x-jet-label for="category" value="{{ __('Category') }}" />
-                        <select id="category" class="mt-1 block w-full text-black"
-                            wire:model.defer="transaction.category_id">
+                        <select id="category" class="mt-1 block w-full text-black" wire:model.defer="transaction.category_id">
                             <option value="0" selected>Select a category</option>
                             @foreach ($this->selectCategories as ['id' => $id, 'name' => $name])
                             <option value="{{ $id }}">{{ $name }}</option>

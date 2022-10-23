@@ -21,6 +21,10 @@ abstract class DataTable extends Component
 
     public bool $massDeletion = false;
 
+    public string $sortColumn = 'created_at';
+
+    public string $sortDirection = 'desc';
+
     /**
      * @var array<int, int>
      */
@@ -59,6 +63,20 @@ abstract class DataTable extends Component
         $this->massDeletion = true;
 
         $this->confirmingModelDeletion = true;
+    }
+
+    public function sortBy(string $columnName): void
+    {
+        if ($this->sortColumn === $columnName) {
+            $this->sortDirection = ($this->sortDirection === 'asc')
+                ? 'desc'
+                : 'asc';
+
+            return;
+        }
+
+        $this->sortColumn = $columnName;
+        $this->sortDirection = 'asc';
     }
 
     protected function bannerEvent(string $style, string $message): void

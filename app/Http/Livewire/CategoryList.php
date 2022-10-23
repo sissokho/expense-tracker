@@ -119,7 +119,7 @@ class CategoryList extends DataTable
         return view('livewire.category-list', [
             'categories' => $this->user->categories()
                 ->search($this->search)
-                ->latest()
+                ->orderBy($this->sortColumn, $this->sortDirection)
                 ->paginate($this->perPage),
         ]);
     }

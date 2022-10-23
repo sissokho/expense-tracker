@@ -170,10 +170,10 @@ class TransactionList extends DataTable
     {
         return view('livewire.transaction-list', [
             'transactions' => $this->user->transactions()
+                ->withCategoryName()
                 ->where('type', $this->type)
                 ->search($this->search)
-                ->with('category')
-                ->latest()
+                ->orderBy($this->sortColumn, $this->sortDirection)
                 ->paginate($this->perPage),
         ]);
     }

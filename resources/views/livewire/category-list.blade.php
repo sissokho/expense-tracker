@@ -11,8 +11,11 @@
                     <th scope="col" class="p-4">
                         <x-datatable.select-all-checkbox :model-ids="$categories->pluck('id')" />
                     </th>
-                    <x-datatable.header-cell>
+                    <x-datatable.header-cell sortable column-name="name" :sort-column="$sortColumn" :sort-direction="$sortDirection">
                         Category
+                    </x-datatable.header-cell>
+                    <x-datatable.header-cell sortable column-name="created_at" :sort-column="$sortColumn" :sort-direction="$sortDirection">
+                        Creation Date
                     </x-datatable.header-cell>
                     <x-datatable.header-cell>
                         Action
@@ -27,6 +30,9 @@
                     </td>
                     <x-datatable.data-cell>
                         {{ $category->name }}
+                    </x-datatable.data-cell>
+                    <x-datatable.data-cell>
+                        {{ $category->created_at->toFormattedDateString() }}
                     </x-datatable.data-cell>
                     <x-datatable.action-cell>
                         <x-datatable.action-edit wire:click.prevent="openModalForm({{ $category }})" />
@@ -51,10 +57,8 @@
             <x-slot name="title">
             </x-slot>
             <x-slot name="content">
-                <div class="mt-4" x-data
-                    x-on:opening-category-form.window="setTimeout(() => $refs.category.focus(), 250)">
-                    <x-jet-input type="text" class="mt-1 block w-full" placeholder="{{ __('Category name') }}"
-                        x-ref="category" wire:model.defer="category.name" wire:keydown.enter="saveCategory" />
+                <div class="mt-4" x-data x-on:opening-category-form.window="setTimeout(() => $refs.category.focus(), 250)">
+                    <x-jet-input type="text" class="mt-1 block w-full" placeholder="{{ __('Category name') }}" x-ref="category" wire:model.defer="category.name" wire:keydown.enter="saveCategory" />
                     <x-jet-input-error for="category.name" class="mt-2" />
                 </div>
             </x-slot>
