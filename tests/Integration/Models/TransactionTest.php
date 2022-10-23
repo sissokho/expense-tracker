@@ -70,4 +70,31 @@ class TransactionTest extends TestCase
         $this->assertEquals('random', $results[2]->name);
         $this->assertEquals('ab', $results[2]->category->name);
     }
+
+    /**
+     * @test
+     */
+    public function with_category_name_scope_works_as_expected(): void
+    {
+        Transaction::factory()->create();
+
+        $retrievedTransaction = Transaction::first();
+
+        $this->assertNotContains('category_name', $retrievedTransaction->getAttributes());
+
+        Transaction::truncate();
+
+        $category = Category::factory()->create();
+
+        Transaction::factory()
+            ->for($category)
+            ->create();
+
+        $retrievedTransaction = Transaction::query()
+            ->withCategoryName()
+            ->first();
+
+        $this->assertNotContains('category_name', $retrievedTransaction->getAttributes());
+        $this->assertSame($category->name, $retrievedTransaction->category_name);
+    }
 }
