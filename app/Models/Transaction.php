@@ -75,4 +75,15 @@ class Transaction extends Model
         return $query->where('name', 'like', "%{$searchTerm}%")
             ->orWhereRelation('category', 'name', 'like', "%{$searchTerm}%");
     }
+
+    /**
+     * @param  Builder<Transaction>  $query
+     */
+    public function scopeWithCategoryName(Builder $query): void
+    {
+        $query->addSelect(
+            ['category_name' => Category::select('name')
+                ->whereColumn('id', 'transactions.category_id'), ]
+        );
+    }
 }

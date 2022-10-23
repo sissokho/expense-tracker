@@ -705,6 +705,90 @@ class TransactionListTest extends TestCase
         ]);
     }
 
+    /**
+     * @test
+     */
+    public function transactions_are_sorted_by_most_recent_by_default(): void
+    {
+        $user = User::factory()->create();
+
+        Transaction::factory()
+            ->count(3)
+            ->income()
+            ->for($user)
+            ->state(new Sequence(
+                ['name' => 'Bus ticket', 'created_at' => now()->subMonth()],
+                ['name' => 'Bananas', 'created_at' => now()->subDay()],
+                ['name' => 'Gym membership', 'created_at' => now()],
+            ))
+            ->create();
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Income,
+        ]);
+
+        $component->assertSet('sortColumn', 'created_at')
+            ->assertSet('sortDirection', 'desc')
+            ->assertSeeInOrder(['Gym membership', 'Bananas', 'Bus ticket']);
+    }
+
+    /**
+     * @test
+     * @dataProvider sortedDataProvider
+     */
+    public function user_can_choose_the_column_by_which_to_sort_transactions(string $sortColumn, array $listInAscendingOrder, array $listInDescendingOrder): void
+    {
+        $user = User::factory()->create();
+
+        $categories = Category::factory()
+            ->count(3)
+            ->for($user)
+            ->state(new Sequence(
+                ['name' => 'Health'],
+                ['name' => 'Food'],
+                ['name' => 'Transportation'],
+            ))
+            ->create();
+
+        Transaction::factory()
+            ->expense()
+            ->count(3)
+            ->for($user)
+            ->state(new Sequence(
+                ['name' => 'Gym membership', 'amount' => 10, 'category_id' => $categories[0]],
+                ['name' => 'Apples', 'amount' => 2.5, 'category_id' => $categories[1]],
+                ['name' => 'Bus ticket', 'amount' => 1, 'category_id' => $categories[2]],
+            ))
+            ->create();
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Expense,
+        ]);
+
+        $component->call('sortBy', $sortColumn)
+            ->assertSet('sortColumn', $sortColumn)
+            ->assertSet('sortDirection', 'asc')
+            ->assertSeeInOrder($listInAscendingOrder);
+
+        $component->call('sortBy', $sortColumn)
+            ->assertSet('sortColumn', $sortColumn)
+            ->assertSet('sortDirection', 'desc')
+            ->assertSeeInOrder($listInDescendingOrder);
+    }
+
+    public function sortedDataProvider(): array
+    {
+        return [
+            'sort by name' => ['name', ['Apples', 'Bus ticket', 'Gym membership'], ['Gym membership', 'Bus ticket', 'Apples']],
+            'sort by amount' => ['amount', ['Bus ticket', 'Apples', 'Gym membership'], ['Gym membership', 'Apples', 'Bus ticket']],
+            'sort by category name' => ['category_name', ['Apples', 'Gym membership', 'Bus ticket'], ['Bus ticket', 'Gym membership', 'Apples']],
+        ];
+    }
+
     public function invalidInputsProvider(): array
     {
         // Format: [[name, amount, category_id], property to test against, validation error rule]

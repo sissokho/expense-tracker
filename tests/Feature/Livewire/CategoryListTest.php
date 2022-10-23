@@ -517,4 +517,70 @@ class CategoryListTest extends TestCase
             'id' => 4,
         ]);
     }
+
+    /**
+     * @test
+     */
+    public function categories_are_sorted_by_most_recent_by_default(): void
+    {
+        $user = User::factory()->create();
+
+        Category::factory()
+            ->count(3)
+            ->for($user)
+            ->state(new Sequence(
+                ['name' => 'Health', 'created_at' => now()->subMonth()],
+                ['name' => 'Food', 'created_at' => now()->subDay()],
+                ['name' => 'Transportation', 'created_at' => now()],
+            ))
+            ->create();
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(CategoryList::class);
+
+        $component->assertSet('sortColumn', 'created_at')
+            ->assertSet('sortDirection', 'desc')
+            ->assertSeeInOrder(['Transportation', 'Food', 'Health']);
+    }
+
+    /**
+     * @test
+     * @dataProvider sortedDataProvider
+     */
+    public function user_can_choose_the_column_by_which_to_sort_categories(string $sortColumn, array $listInAscendingOrder, array $listInDescendingOrder): void
+    {
+        $user = User::factory()->create();
+
+        Category::factory()
+            ->count(3)
+            ->for($user)
+            ->state(new Sequence(
+                ['name' => 'Health'],
+                ['name' => 'Food'],
+                ['name' => 'Transportation'],
+            ))
+            ->create();
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(CategoryList::class);
+
+        $component->call('sortBy', $sortColumn)
+            ->assertSet('sortColumn', $sortColumn)
+            ->assertSet('sortDirection', 'asc')
+            ->assertSeeInOrder($listInAscendingOrder);
+
+        $component->call('sortBy', $sortColumn)
+            ->assertSet('sortColumn', $sortColumn)
+            ->assertSet('sortDirection', 'desc')
+            ->assertSeeInOrder($listInDescendingOrder);
+    }
+
+    public function sortedDataProvider(): array
+    {
+        return [
+            'sort by name' => ['name', ['Food', 'Health', 'Transportation'], ['Transportation', 'Health', 'Food']],
+        ];
+    }
 }
