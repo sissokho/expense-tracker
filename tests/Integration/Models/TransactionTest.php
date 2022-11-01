@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Integration\Models;
 
+use App\Enums\TransactionType;
 use App\Models\Category;
 use App\Models\Transaction;
+use App\Models\User;
+use App\ValueObjects\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -96,5 +99,47 @@ class TransactionTest extends TestCase
 
         $this->assertNotContains('category_name', $retrievedTransaction->getAttributes());
         $this->assertSame($category->name, $retrievedTransaction->category_name);
+    }
+
+    /**
+     * @test
+     */
+    public function total_income_and_expenses_are_correctly_calculated(): void
+    {
+        $transactions = Transaction::factory()
+            ->count(10)
+            ->create();
+
+        $expectedIncome = $transactions->where('type', TransactionType::Income)->sum('amount');
+        $expectedExpenses = $transactions->where('type', TransactionType::Expense)->sum('amount');
+
+        ['total_income' => $totalIncome, 'total_expenses' => $totalExpenses] = Transaction::query()
+            ->totalIncomeAndExpenses()
+            ->first()
+            ->toArray();
+
+        // Casting to null because it can return null in case there is no expense or income in the database
+        $this->assertSame((new Money($expectedExpenses))->toCents(), (int) $totalExpenses);
+        $this->assertSame((new Money($expectedIncome))->toCents(), (int) $totalIncome);
+
+        // For a specific user
+        $user = User::factory()->create();
+
+        $userTransactions = Transaction::factory()
+            ->for($user)
+            ->count(10)
+            ->create();
+
+        $expectedIncome = $userTransactions->where('type', TransactionType::Income)->sum('amount');
+        $expectedExpenses = $userTransactions->where('type', TransactionType::Expense)->sum('amount');
+
+        ['total_income' => $totalIncome, 'total_expenses' => $totalExpenses] = Transaction::query()
+            ->totalIncomeAndExpenses()
+            ->where('user_id', $user->id)
+            ->first()
+            ->toArray();
+
+        $this->assertSame((new Money($expectedExpenses))->toCents(), (int) $totalExpenses);
+        $this->assertSame((new Money($expectedIncome))->toCents(), (int) $totalIncome);
     }
 }

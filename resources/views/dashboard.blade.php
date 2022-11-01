@@ -7,8 +7,13 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                <x-jet-welcome />
+            <div class="overflow-hidden p-5 space-y-10 sm:rounded-lg">
+                <livewire:dashboard.stats-cards />
+
+                <div class="flex flex-col items-center gap-5 lg:flex-row lg:justify-between">
+                    <livewire:dashboard.top-transactions :type="\App\Enums\TransactionType::Income" />
+                    <livewire:dashboard.top-transactions :type="\App\Enums\TransactionType::Expense" />
+                </div>
             </div>
         </div>
     </div>

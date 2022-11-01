@@ -86,4 +86,13 @@ class Transaction extends Model
                 ->whereColumn('id', 'transactions.category_id'), ]
         );
     }
+
+    /**
+     * @param  Builder<Transaction>  $query
+     */
+    public function scopeTotalIncomeAndExpenses(Builder $query): void
+    {
+        $query->selectRaw('SUM(CASE WHEN type = ? THEN amount ELSE 0 END) AS total_income', [(TransactionType::Income)->value])
+            ->selectRaw('SUM(CASE WHEN type = ? THEN amount ELSE 0 END) AS total_expenses', [(TransactionType::Expense)->value]);
+    }
 }
