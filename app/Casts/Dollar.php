@@ -31,6 +31,6 @@ class Dollar implements CastsAttributes
             return 0;
         }
 
-        return  (int) ($value * 100);
+        return (int) round($value * 100);
     }
 }
