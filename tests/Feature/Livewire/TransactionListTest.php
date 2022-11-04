@@ -728,8 +728,8 @@ class TransactionListTest extends TestCase
             'name' => 'transaction',
             'className' => TransactionList::class,
             'params' => [
-                'type' => Arr::random([TransactionType::Income, TransactionType::Expense])
-            ]
+                'type' => Arr::random([TransactionType::Income, TransactionType::Expense]),
+            ],
         ];
     }
 }
