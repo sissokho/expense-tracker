@@ -9,15 +9,18 @@ use App\Http\Livewire\TransactionList;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\User;
+use Arr;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
+use Tests\Feature\Livewire\Concerns\DataTableContractTest;
 use Tests\TestCase;
 
 class TransactionListTest extends TestCase
 {
     use RefreshDatabase;
+    use DataTableContractTest;
 
     /**
      * @test
@@ -216,22 +219,6 @@ class TransactionListTest extends TestCase
     /**
      * @test
      */
-    public function user_can_choose_the_number_of_transactions_to_show_per_page(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Income,
-        ])
-            ->set('perPage', 20);
-
-        $component->assertSet('perPage', 20)
-            ->assertPropertyWired('perPage');
-    }
-
-    /**
-     * @test
-     */
     public function user_can_search_transactions_by_their_name_and_their_category(): void
     {
         $user = User::factory()->create();
@@ -296,24 +283,6 @@ class TransactionListTest extends TestCase
     /**
      * @test
      */
-    public function page_number_is_reset_to_one_when_user_perform_a_search(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::withQueryParams(['page' => 2])
-            ->test(TransactionList::class, [
-                'type' => TransactionType::Income,
-            ]);
-
-        $component->assertSet('page', 2)
-            ->set('search', 'banana')
-            ->assertSet('search', 'banana')
-            ->assertSet('page', 1);
-    }
-
-    /**
-     * @test
-     */
     public function form_components_are_wired(): void
     {
         Livewire::actingAs(User::factory()->make());
@@ -327,35 +296,6 @@ class TransactionListTest extends TestCase
             ->assertPropertyWired('transaction.category_id')
             ->assertMethodWired('openModalForm')
             ->assertMethodWired('saveTransaction');
-    }
-
-    /**
-     * @test
-     */
-    public function form_modal_is_closed_when_component_is_first_rendered(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Expense,
-        ]);
-
-        $component->assertSet('openingModalForm', false);
-    }
-
-    /**
-     * @test
-     */
-    public function form_modal_can_be_opened(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Income,
-        ])->call('openModalForm');
-
-        $component->assertSet('openingModalForm', true)
-            ->assertDispatchedBrowserEvent('opening-transaction-form');
     }
 
     /**
@@ -397,22 +337,6 @@ class TransactionListTest extends TestCase
             ->assertSet('transaction.name', $transaction->name)
             ->assertSet('transaction.amount', $transaction->amount)
             ->assertSet('transaction.category_id', $transaction->category_id);
-    }
-
-    /**
-     * @test
-     */
-    public function form_modal_can_be_closed(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Expense,
-        ])->set('openingModalForm', true);
-
-        $component->assertSet('openingModalForm', true)
-            ->set('openingModalForm', false)
-            ->assertSet('openingModalForm', false);
     }
 
     /**
@@ -646,21 +570,6 @@ class TransactionListTest extends TestCase
 
     /**
      * @test
-     */
-    public function user_must_confirm_when_deleting_multiple_transactions(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(TransactionList::class, [
-            'type' => TransactionType::Income,
-        ])->call('confirmMassDeletion');
-
-        $component->assertSet('massDeletion', true)
-            ->assertSet('confirmingModelDeletion', true);
-    }
-
-    /**
-     * @test
      * @dataProvider transactionTypeProvider
      */
     public function user_can_delete_multiple_transactions(TransactionType $type): void
@@ -810,6 +719,17 @@ class TransactionListTest extends TestCase
         return [
             'type income' => [TransactionType::Income],
             'type expense' => [TransactionType::Expense],
+        ];
+    }
+
+    private function getTestable(): array
+    {
+        return [
+            'name' => 'transaction',
+            'className' => TransactionList::class,
+            'params' => [
+                'type' => Arr::random([TransactionType::Income, TransactionType::Expense])
+            ]
         ];
     }
 }

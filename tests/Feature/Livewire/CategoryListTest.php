@@ -12,11 +12,13 @@ use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
+use Tests\Feature\Livewire\Concerns\DataTableContractTest;
 use Tests\TestCase;
 
 class CategoryListTest extends TestCase
 {
     use RefreshDatabase;
+    use DataTableContractTest;
 
     /** @test */
     public function the_component_can_be_rendered(): void
@@ -123,20 +125,6 @@ class CategoryListTest extends TestCase
     /**
      * @test
      */
-    public function user_can_choose_the_number_of_categories_to_show_per_page(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(CategoryList::class)
-            ->set('perPage', 20);
-
-        $component->assertSet('perPage', 20)
-            ->assertPropertyWired('perPage');
-    }
-
-    /**
-     * @test
-     */
     public function user_can_search_categories_by_their_name(): void
     {
         $user = User::factory()->create();
@@ -163,29 +151,6 @@ class CategoryListTest extends TestCase
     /**
      * @test
      */
-    public function page_number_is_reset_to_one_when_user_perform_a_search(): void
-    {
-        $user = User::factory()->create();
-
-        Category::factory()
-            ->for($user)
-            ->count(49)
-            ->create();
-
-        Livewire::actingAs($user);
-
-        $component = Livewire::withQueryParams(['page' => 2])
-            ->test(CategoryList::class);
-
-        $component->assertSet('page', 2)
-            ->set('search', 'banana')
-            ->assertSet('search', 'banana')
-            ->assertSet('page', 1);
-    }
-
-    /**
-     * @test
-     */
     public function form_components_are_correctly_wired(): void
     {
         Livewire::actingAs(User::factory()->make());
@@ -195,32 +160,6 @@ class CategoryListTest extends TestCase
         $component->assertPropertyWired('category.name')
             ->assertMethodWired('openModalForm')
             ->assertMethodWired('saveCategory');
-    }
-
-    /**
-     * @test
-     */
-    public function form_modal_is_closed_when_component_is_first_rendered(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(CategoryList::class);
-
-        $component->assertSet('openingModalForm', false);
-    }
-
-    /**
-     * @test
-     */
-    public function form_can_be_opened(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(CategoryList::class)
-            ->call('openModalForm');
-
-        $component->assertSet('openingModalForm', true)
-            ->assertDispatchedBrowserEvent('opening-category-form');
     }
 
     /**
@@ -255,21 +194,6 @@ class CategoryListTest extends TestCase
 
         $component->assertSet('category.id', $category->id)
             ->assertSet('category.name', $category->name);
-    }
-
-    /**
-     * @test
-     */
-    public function form_can_be_closed(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(CategoryList::class)
-            ->set('openingModalForm', true);
-
-        $component->assertSet('openingModalForm', true)
-            ->set('openingModalForm', false)
-            ->assertSet('openingModalForm', false);
     }
 
     /**
@@ -465,20 +389,6 @@ class CategoryListTest extends TestCase
     /**
      * @test
      */
-    public function user_must_confirm_when_deleting_multiple_categories(): void
-    {
-        Livewire::actingAs(User::factory()->make());
-
-        $component = Livewire::test(CategoryList::class)
-            ->call('confirmMassDeletion');
-
-        $component->assertSet('massDeletion', true)
-            ->assertSet('confirmingModelDeletion', true);
-    }
-
-    /**
-     * @test
-     */
     public function user_can_delete_multiple_categories(): void
     {
         $user = User::factory()->create();
@@ -581,6 +491,15 @@ class CategoryListTest extends TestCase
     {
         return [
             'sort by name' => ['name', ['Food', 'Health', 'Transportation'], ['Transportation', 'Health', 'Food']],
+        ];
+    }
+
+    private function getTestable(): array
+    {
+        return [
+            'name' => 'category',
+            'className' => CategoryList::class,
+            'params' => []
         ];
     }
 }
