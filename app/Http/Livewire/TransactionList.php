@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -38,12 +39,18 @@ class TransactionList extends DataTable
     }
 
     /**
-     * @return array<string, array<int, \Illuminate\Validation\Rules\In|string>>
+     * @return array<string, array<int, \Illuminate\Validation\Rules\In|\Illuminate\Validation\Rules\Unique|string>>
      */
     public function rules(): array
     {
         return [
-            'transaction.name' => ['required', 'string', 'max:255'],
+            'transaction.name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('transactions', 'name')
+                    ->where(fn (Builder $query) => $query->where('user_id', $this->user->id)->where('type', $this->type)),
+            ],
             'transaction.amount' => ['required', 'numeric', 'min:0.01'], //0.01 => 1 cent,
             'transaction.category_id' => [
                 'required',

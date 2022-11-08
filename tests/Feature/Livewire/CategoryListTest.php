@@ -71,7 +71,7 @@ class CategoryListTest extends TestCase
 
         $otherCategories = Category::factory()
             ->for(User::factory())
-            ->count(3)
+            ->count(2)
             ->state(new Sequence(
                 ['name' => 'health'],
                 ['name' => 'school'],
@@ -330,6 +330,43 @@ class CategoryListTest extends TestCase
 
         $component->assertHasErrors([
             'category.name' => ['max'],
+        ]);
+    }
+
+    /**
+     * @test
+     */
+    public function category_name_must_be_unique_for_the_current_logged_in_user(): void
+    {
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user);
+
+        // Category that does not belong to the current logged in user
+        Category::factory()
+            ->state(['name' => 'Health'])
+            ->create();
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('openModalForm')
+            ->set('category.name', 'Health')
+            ->call('saveCategory');
+
+        $component->assertHasNoErrors();
+
+        // Category that belongs to user
+        Category::factory()
+            ->state(['name' => 'Food'])
+            ->for($user)
+            ->create();
+
+        $component = Livewire::test(CategoryList::class)
+            ->call('openModalForm')
+            ->set('category.name', 'Food')
+            ->call('saveCategory');
+
+        $component->assertHasErrors([
+            'category.name' => ['unique'],
         ]);
     }
 

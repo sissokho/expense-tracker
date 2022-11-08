@@ -517,6 +517,60 @@ class TransactionListTest extends TestCase
 
     /**
      * @test
+     */
+    public function transaction_name_must_be_unique_for_current_logged_in_user_and_transaction_type(): void
+    {
+        $user = User::factory()->create();
+
+        $userCategory = Category::factory()
+            ->for($user)
+            ->create();
+
+        // Transaction that does not belong to the user
+        Transaction::factory()
+            ->expense()
+            ->state(['name' => 'Banana'])
+            ->create();
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Expense,
+        ])->call('openModalForm')
+            ->set('transaction.name', 'Banana')
+            ->set('transaction.amount', 10)
+            ->set('transaction.category_id', $userCategory->id)
+            ->call('saveTransaction');
+
+        $component->assertHasNoErrors();
+
+        // Transaction that belongs to the user but with a different type (income instead of expense)
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Income,
+        ])->call('openModalForm')
+            ->set('transaction.name', 'Banana')
+            ->set('transaction.amount', 10)
+            ->set('transaction.category_id', $userCategory->id)
+            ->call('saveTransaction');
+
+        $component->assertHasNoErrors();
+
+        // Transaction that belongs to the user and with the same type (expense)
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Expense,
+        ])->call('openModalForm')
+            ->set('transaction.name', 'Banana')
+            ->set('transaction.amount', 10)
+            ->set('transaction.category_id', $userCategory->id)
+            ->call('saveTransaction');
+
+        $component->assertHasErrors([
+            'transaction.name' => ['unique'],
+        ]);
+    }
+
+    /**
+     * @test
      * @dataProvider transactionTypeProvider
      */
     public function user_must_confirm_when_deleting_a_transaction(TransactionType $type): void

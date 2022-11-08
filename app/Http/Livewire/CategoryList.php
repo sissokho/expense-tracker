@@ -6,7 +6,9 @@ namespace App\Http\Livewire;
 
 use App\Models\Category;
 use App\Models\User;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -19,11 +21,19 @@ class CategoryList extends DataTable
     public Category $category;
 
     /**
-     * @var array<string, array<int, string>>
+     * @return array<string, array<int, \Illuminate\Validation\Rules\Unique|string>>
      */
-    protected $rules = [
-        'category.name' => ['required', 'string', 'max:255'],
-    ];
+    public function rules(): array
+    {
+        return [
+            'category.name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories', 'name')->where(fn (Builder $query) => $query->where('user_id', $this->user->id)),
+            ],
+        ];
+    }
 
     public function getUserProperty(): User
     {
