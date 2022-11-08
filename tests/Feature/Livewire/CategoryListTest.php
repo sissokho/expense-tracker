@@ -92,6 +92,28 @@ class CategoryListTest extends TestCase
     /**
      * @test
      */
+    public function category_creation_date_is_correctly_formatted(): void
+    {
+        $user = User::factory()->create();
+
+        $category = Category::factory()
+            ->for($user)
+            ->state(['created_at' => '2022-11-05'])
+            ->create();
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(CategoryList::class);
+
+        $component->assertSeeInOrder([
+            $category->name,
+            'Nov 5, 2022',
+        ]);
+    }
+
+    /**
+     * @test
+     */
     public function categories_can_be_paginated(): void
     {
         $user = User::factory()->create();

@@ -185,6 +185,33 @@ class TransactionListTest extends TestCase
     /**
      * @test
      */
+    public function transaction_entry_date_is_correctly_formatted(): void
+    {
+        $user = User::factory()->create();
+
+        $transaction = Transaction::factory()
+            ->income()
+            ->state(['created_at' => '2022-11-05'])
+            ->for($user)
+            ->create();
+
+        Livewire::actingAs($user);
+
+        $component = Livewire::test(TransactionList::class, [
+            'type' => TransactionType::Income,
+        ]);
+
+        $component->assertSeeInOrder([
+            $transaction->name,
+            $transaction->amount,
+            $transaction->category->name,
+            'Nov 5, 2022',
+        ]);
+    }
+
+    /**
+     * @test
+     */
     public function transactions_can_be_paginated(): void
     {
         $user = User::factory()->create();
