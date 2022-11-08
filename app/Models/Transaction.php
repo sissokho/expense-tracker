@@ -6,12 +6,12 @@ namespace App\Models;
 
 use App\Casts\Dollar;
 use App\Enums\TransactionType;
+use App\ValueObjects\Dollar as DollarValueObject;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use NumberFormatter;
 
 /**
  * @property float $amount
@@ -52,12 +52,7 @@ class Transaction extends Model
     public function formattedAmount(): Attribute
     {
         return Attribute::make(
-            get: function () {
-                $formatter = new NumberFormatter('en_US', NumberFormatter::CURRENCY);
-                $formatter->setAttribute(NumberFormatter::FRACTION_DIGITS, 2);
-
-                return $formatter->formatCurrency($this->amount, 'USD');
-            },
+            get: fn () => (string) new DollarValueObject($this->amount),
         );
     }
 

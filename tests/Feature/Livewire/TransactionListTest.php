@@ -425,7 +425,7 @@ class TransactionListTest extends TestCase
             ->for($foodCategory)
             ->create([
                 'name' => 'Bana',
-                'amount' => '2', // 2 USD
+                'amount' => 2, // 2 USD
                 'type' => $type,
             ]);
 
@@ -755,8 +755,8 @@ class TransactionListTest extends TestCase
             'name' => 'transaction',
             'className' => TransactionList::class,
             'params' => [
-                'type' => Arr::random([TransactionType::Income, TransactionType::Expense])
-            ]
+                'type' => Arr::random([TransactionType::Income, TransactionType::Expense]),
+            ],
         ];
     }
 }

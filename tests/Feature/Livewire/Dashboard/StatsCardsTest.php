@@ -7,7 +7,7 @@ namespace Tests\Feature\Livewire\Dashboard;
 use App\Http\Livewire\Dashboard\StatsCards;
 use App\Models\Transaction;
 use App\Models\User;
-use App\ValueObjects\Money;
+use App\ValueObjects\Dollar;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -37,10 +37,9 @@ class StatsCardsTest extends TestCase
 
         $component = Livewire::test(StatsCards::class);
 
-        // Convert to int because total_income/total_expenses can return null when there are no incomes/expenses in the database
-        $component->assertViewHas('total_income', Money::fromCents((int) null))
-            ->assertViewHas('total_expenses', Money::fromCents((int) null))
-            ->assertViewHas('profit', Money::fromCents(0))
+        $component->assertViewHas('total_income', Dollar::fromCents(0))
+            ->assertViewHas('total_expenses', Dollar::fromCents(0))
+            ->assertViewHas('profit', Dollar::fromCents(0))
             ->assertSeeHtmlInOrder([
                 '<h2>Total Income</h2>',
                 '<span class="text-2xl text-green-700">$0.00</span>',
@@ -80,9 +79,9 @@ class StatsCardsTest extends TestCase
         $totalExpense = (int) ((10 * 100) + (40 * 100) + (2 * 100));
         $profit = $totalIncome - $totalExpense;
 
-        $component->assertViewHas('total_income', Money::fromCents($totalIncome))
-            ->assertViewHas('total_expenses', Money::fromCents($totalExpense))
-            ->assertViewHas('profit', Money::fromCents($profit))
+        $component->assertViewHas('total_income', Dollar::fromCents($totalIncome))
+            ->assertViewHas('total_expenses', Dollar::fromCents($totalExpense))
+            ->assertViewHas('profit', Dollar::fromCents($profit))
             ->assertSeeHtmlInOrder([
                 '<h2>Total Income</h2>',
                 '<span class="text-2xl text-green-700">$77.50</span>',

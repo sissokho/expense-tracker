@@ -8,7 +8,7 @@ use App\Enums\TransactionType;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\User;
-use App\ValueObjects\Money;
+use App\ValueObjects\Dollar;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -118,9 +118,9 @@ class TransactionTest extends TestCase
             ->first()
             ->toArray();
 
-        // Casting to null because it can return null in case there is no expense or income in the database
-        $this->assertSame((new Money($expectedExpenses))->toCents(), (int) $totalExpenses);
-        $this->assertSame((new Money($expectedIncome))->toCents(), (int) $totalIncome);
+        // Casting to int because it can return null in case there is no expense or income in the database
+        $this->assertSame((new Dollar($expectedExpenses))->toCents(), (int) $totalExpenses);
+        $this->assertSame((new Dollar($expectedIncome))->toCents(), (int) $totalIncome);
 
         // For a specific user
         $user = User::factory()->create();
@@ -139,7 +139,7 @@ class TransactionTest extends TestCase
             ->first()
             ->toArray();
 
-        $this->assertSame((new Money($expectedExpenses))->toCents(), (int) $totalExpenses);
-        $this->assertSame((new Money($expectedIncome))->toCents(), (int) $totalIncome);
+        $this->assertSame((new Dollar($expectedExpenses))->toCents(), (int) $totalExpenses);
+        $this->assertSame((new Dollar($expectedIncome))->toCents(), (int) $totalIncome);
     }
 }

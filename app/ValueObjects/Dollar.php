@@ -6,13 +6,13 @@ namespace App\ValueObjects;
 
 use NumberFormatter;
 
-final class Money
+final class Dollar
 {
     public function __construct(public readonly float $amount)
     {
     }
 
-    public static function fromCents(int $amount): self
+    public static function fromCents(?int $amount): self
     {
         return new self($amount / 100);
     }

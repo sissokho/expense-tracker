@@ -6,7 +6,7 @@ namespace App\Http\Livewire\Dashboard;
 
 use App\Models\Transaction;
 use App\Models\User;
-use App\ValueObjects\Money;
+use App\ValueObjects\Dollar;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -27,10 +27,9 @@ class StatsCards extends Component
         $profit = $totalIncome - $totalExpenses;
 
         return view('livewire.dashboard.stats-cards', [
-            // Convert to int because total_income/total_expenses can return null in case their are no income or expense in the database
-            'total_income' => Money::fromCents((int) $totalIncome),
-            'total_expenses' => Money::fromCents((int) $totalExpenses),
-            'profit' => Money::fromCents($profit),
+            'total_income' => Dollar::fromCents((int) $totalIncome),
+            'total_expenses' => Dollar::fromCents((int) $totalExpenses),
+            'profit' => Dollar::fromCents($profit),
         ]);
     }
 }
