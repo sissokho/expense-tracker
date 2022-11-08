@@ -521,7 +521,7 @@ class CategoryListTest extends TestCase
         return [
             'name' => 'category',
             'className' => CategoryList::class,
-            'params' => []
+            'params' => [],
         ];
     }
 }

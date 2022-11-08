@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Livewire\Concerns;
 
 use App\Models\User;
@@ -7,7 +9,7 @@ use Livewire;
 
 trait DataTableContractTest
 {
-    private abstract function getTestable(): array;
+    abstract private function getTestable(): array;
 
     /** @test */
     public function user_can_choose_the_number_of_records_to_show_per_page(): void
