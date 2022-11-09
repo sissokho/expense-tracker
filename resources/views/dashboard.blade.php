@@ -10,7 +10,7 @@
             <div class="overflow-hidden p-5 space-y-10 sm:rounded-lg">
                 <livewire:dashboard.stats-cards />
 
-                <div class="flex flex-col items-center gap-5 lg:flex-row lg:justify-between">
+                <div class="flex flex-col items-center gap-5 lg:flex-row lg:justify-between lg:items-stretch">
                     <livewire:dashboard.top-transactions :type="\App\Enums\TransactionType::Income" />
                     <livewire:dashboard.top-transactions :type="\App\Enums\TransactionType::Expense" />
                 </div>
