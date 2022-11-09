@@ -22,6 +22,8 @@ class TopTransactionsTest extends TestCase
      */
     public function the_component_can_render(TransactionType $type)
     {
+        Livewire::actingAs(User::factory()->make());
+
         $component = Livewire::test(TopTransactions::class, [
             'type' => $type,
         ]);
@@ -38,13 +40,17 @@ class TopTransactionsTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $transactions = Transaction::factory()
+        $currentUserTransactions = Transaction::factory()
             ->count(20)
             ->state(['type' => $type])
             ->for($user)
             ->create();
 
-        $topTransactions = $transactions->sortByDesc('amount')
+        $anotherUserTransactions = Transaction::factory()
+            ->count(30)
+            ->create();
+
+        $topTransactions = $currentUserTransactions->sortByDesc('amount')
             ->take(10)
             ->map(fn (Transaction $transaction) => [$transaction->name, $transaction->formatted_amount])
             ->flatten()

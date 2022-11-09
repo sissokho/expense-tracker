@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Livewire\Dashboard;
 
 use App\Enums\TransactionType;
-use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -22,8 +22,11 @@ class TopTransactions extends Component
 
     public function render(): View
     {
+        /** @var User $user */
+        $user = auth()->user();
+
         return view('livewire.dashboard.top-transactions', [
-            'transactions' => Transaction::query()
+            'transactions' => $user->transactions()
                 ->where('type', $this->type)
                 ->orderByDesc('amount')
                 ->take($this->limit)
