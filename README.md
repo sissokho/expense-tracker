@@ -2,6 +2,14 @@
 
 This is a simple Expense Tracker built with Laravel, Livewire and Laravel Jetstream.
 
+![Screenshot 2022-11-09 at 11-55-45 Laravel](https://user-images.githubusercontent.com/31145894/200824431-446aea23-d541-40e6-a92c-e888cdb6c9c3.png)
+
+![Screenshot 2022-11-09 at 11-56-06 Laravel](https://user-images.githubusercontent.com/31145894/200824507-6b90f2dc-46bd-4c26-ab50-6a8c87afa670.png)
+
+![Screenshot 2022-11-09 at 11-56-15 Laravel](https://user-images.githubusercontent.com/31145894/200824540-2cfb4129-ca89-420d-a926-53a781602d59.png)
+
+![Screenshot 2022-11-09 at 11-56-24 Laravel](https://user-images.githubusercontent.com/31145894/200824567-eb9d2970-916d-449f-a387-d29f394d4c69.png)
+
 ## Requirements
 
 The following tools are required in order to install and run the project locally.
