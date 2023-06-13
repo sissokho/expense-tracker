@@ -18,6 +18,7 @@ class TopTransactionsTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider transactionTypeProvider
      */
     public function the_component_can_render(TransactionType $type)
@@ -34,6 +35,7 @@ class TopTransactionsTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider transactionTypeProvider
      */
     public function top_transactions_are_displayed(TransactionType $type)

@@ -515,6 +515,7 @@ class CategoryListTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider sortedDataProvider
      */
     public function user_can_choose_the_column_by_which_to_sort_categories(string $sortColumn, array $listInAscendingOrder, array $listInDescendingOrder): void

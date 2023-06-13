@@ -24,6 +24,7 @@ class TransactionListTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider transactionTypeProvider
      */
     public function the_component_can_be_rendered_with_the_correct_transaction_type(TransactionType $type): void
@@ -368,6 +369,7 @@ class TransactionListTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider transactionTypeProvider
      */
     public function user_can_create_a_transaction(TransactionType $type): void
@@ -408,6 +410,7 @@ class TransactionListTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider transactionTypeProvider
      */
     public function user_can_edit_a_transaction(TransactionType $type): void
@@ -486,6 +489,7 @@ class TransactionListTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider invalidInputsProvider
      */
     public function user_cannot_save_a_transaction_with_invalid_data(array $inputs, string $property, string $rule): void
@@ -571,6 +575,7 @@ class TransactionListTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider transactionTypeProvider
      */
     public function user_must_confirm_when_deleting_a_transaction(TransactionType $type): void
@@ -595,6 +600,7 @@ class TransactionListTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider transactionTypeProvider
      */
     public function user_can_delete_one_of_his_transactions(TransactionType $type): void
@@ -629,6 +635,7 @@ class TransactionListTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider transactionTypeProvider
      */
     public function user_cannot_delete_a_transaction_that_does_not_belong_to_him(TransactionType $type): void
@@ -651,6 +658,7 @@ class TransactionListTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider transactionTypeProvider
      */
     public function user_can_delete_multiple_transactions(TransactionType $type): void
@@ -726,6 +734,7 @@ class TransactionListTest extends TestCase
 
     /**
      * @test
+     *
      * @dataProvider sortedDataProvider
      */
     public function user_can_choose_the_column_by_which_to_sort_transactions(string $sortColumn, array $listInAscendingOrder, array $listInDescendingOrder): void

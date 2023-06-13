@@ -34,7 +34,6 @@ class Category extends Model
 
     /**
      * @param  Builder<Category>  $query
-     * @param  string  $searchTerm
      * @return Builder<Category>
      */
     public function scopeSearch(Builder $query, string $searchTerm): Builder

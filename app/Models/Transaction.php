@@ -58,7 +58,6 @@ class Transaction extends Model
 
     /**
      * @param  Builder<Transaction>  $query
-     * @param  string  $searchTerm
      * @return Builder<Transaction>
      */
     public function scopeSearch(Builder $query, string $searchTerm): Builder
